@@ -1,0 +1,27 @@
+stages:
+  - lint
+  - test
+
+lint:
+  stage: lint
+  script:
+    - make lint
+
+test-3.6:
+  image: python:3.6
+  stage: test
+  coverage: '/TOTAL.*([0-9]{1,3})%/'
+  script:
+    - make test
+
+test-3.7:
+  image: python:3.7
+  stage: test
+  script:
+    - make test
+
+test-3.8-rc:
+  image: python:3.8-rc
+  stage: test
+  script:
+    - make test
