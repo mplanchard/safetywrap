@@ -4,10 +4,6 @@ stages:
   - lint
   - test
 
-cache:
-  paths:
-    - venv
-
 lint:
   stage: lint
   script:
