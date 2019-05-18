@@ -3,6 +3,7 @@ stages:
   - test
 
 lint:
+  image: python:3
   stage: lint
   script:
     - make lint
