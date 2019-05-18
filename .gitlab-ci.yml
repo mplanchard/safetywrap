@@ -16,20 +16,20 @@ lint:
 test-3.6:
   image: python:3.6
   stage: test
-  coverage: '/^TOTAL.+(\d+\%)$/'
+  coverage: '/^TOTAL\s+\d+\s+\d+\s+\s+\d+\s+\d+(\d+\%)$/'
   script:
     - make test
 
 test-3.7:
   image: python:3.7
   stage: test
-  coverage: '/^TOTAL.+(\d+\%)$/'
+  coverage: '/^TOTAL\s+\d+\s+\d+\s+\s+\d+\s+\d+(\d+\%)$/'
   script:
     - make test
 
 test-3.8-rc:
   image: python:3.8-rc
   stage: test
-  coverage: '/^TOTAL.+(\d+\%)$/'
+  coverage: '/^TOTAL\s+\d+\s+\d+\s+\s+\d+\s+\d+(\d+\%)$/'
   script:
     - make test
