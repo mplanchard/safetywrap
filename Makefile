@@ -4,6 +4,8 @@ LINE_LENGTH = 79
 
 .PHONY: clean build fmt lint test
 
+all: fmt lint test
+
 venv: venv/bin/activate
 venv/bin/activate: setup.py
 	python3 -m venv venv
