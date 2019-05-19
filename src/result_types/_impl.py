@@ -247,7 +247,6 @@ class Some(Option[T]):
     def __init__(self, value: T) -> None:
         self._value = value
 
-    @classmethod
     def and_(self, alternative: "Option[U]") -> "Option[U]":
         """Return `Nothing` if `self` is `Nothing`, or the `alternative`."""
         return alternative
