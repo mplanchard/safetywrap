@@ -62,7 +62,7 @@ class Result(t.Generic[T, E]):
             return Some(t.cast(T, self._value))
         return Nothing()
 
-    def expect(self, msg: str, exc_cls: t.Type[Exception] = TypeError) -> T:
+    def expect(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T:
         """Return `Ok` value or raise an error with the specified message.
 
         The raised exception class may be specified with the `exc_cls`
@@ -73,7 +73,7 @@ class Result(t.Generic[T, E]):
         raise exc_cls(msg)
 
     def expect_err(
-        self, msg: str, exc_cls: t.Type[Exception] = TypeError
+        self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
     ) -> E:
         """Return `Err` value or raise an error with the specified message.
 
@@ -115,13 +115,13 @@ class Result(t.Generic[T, E]):
     def unwrap(self) -> T:
         """Return an Ok result, or throw an error if an Err."""
         if self.is_err():
-            raise TypeError(f"Tried to unwrap {self}!")
+            raise RuntimeError(f"Tried to unwrap {self}!")
         return t.cast(T, self._value)
 
     def unwrap_err(self) -> E:
         """Return an Ok result, or throw an error if an Err."""
         if self.is_ok():
-            raise TypeError(f"Tried to unwrap_err {self}!")
+            raise RuntimeError(f"Tried to unwrap_err {self}!")
         return t.cast(E, self._value)
 
     def unwrap_or(self, alternative: T) -> T:
@@ -214,7 +214,7 @@ class Option(t.Generic[T]):
             return t.cast(Option[T], self)
         return fn()
 
-    def expect(self, msg: str, exc_cls: t.Type[Exception] = TypeError) -> T:
+    def expect(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T:
         """Unwrap and yield a `Some`, or throw an exception if `Nothing`.
 
         The exception class may be specified with the `exc_cls` keyword
@@ -304,7 +304,7 @@ class Option(t.Generic[T]):
         """Return `Some` value, or raise an error."""
         if self.is_some():
             return t.cast(T, self._value)
-        raise TypeError("Tried to unwrap Nothing")
+        raise RuntimeError("Tried to unwrap Nothing")
 
     def unwrap_or(self, default: T) -> T:
         """Return the contained value or `default`."""

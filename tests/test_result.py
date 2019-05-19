@@ -95,7 +95,7 @@ class TestResult:
         self, start: Result[int, int], exc_cls: t.Type[Exception]
     ) -> None:
         """Test expecting a value to be Ok()."""
-        exp_exc = exc_cls if exc_cls else TypeError
+        exp_exc = exc_cls if exc_cls else RuntimeError
         with pytest.raises(exp_exc):
             if exc_cls:
                 start.expect("err", exc_cls=exc_cls)
@@ -113,7 +113,7 @@ class TestResult:
         self, start: Result[int, int], exc_cls: t.Type[Exception]
     ) -> None:
         """Test expecting a value to be Ok()."""
-        exp_exc = exc_cls if exc_cls else TypeError
+        exp_exc = exc_cls if exc_cls else RuntimeError
         with pytest.raises(exp_exc):
             if exc_cls:
                 start.expect_err("err", exc_cls=exc_cls)
@@ -193,12 +193,12 @@ class TestResult:
 
     def test_unwrap_is_err(self) -> None:
         """.unwrap() raises for an error value."""
-        with pytest.raises(TypeError):
+        with pytest.raises(RuntimeError):
             Err(5).unwrap()
 
     def test_unwrap_err_is_ok(self) -> None:
         """.unwrap_err() raises for an ok value."""
-        with pytest.raises(TypeError):
+        with pytest.raises(RuntimeError):
             Ok(5).unwrap_err()
 
     def test_unwrap_err_is_err(self) -> None:
