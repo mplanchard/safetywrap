@@ -184,7 +184,8 @@ class TestResult:
 
     def test_or_multichain(self) -> None:
         """.or_() calls can be chained indefinitely."""
-        assert Err(5).or_(Err(6)).or_(Err(7)).or_(Ok(8)) == Ok(8)
+        err: Result[int, int] = Err(5)
+        assert err.or_(Err(6)).or_(Err(7)).or_(Ok(8)) == Ok(8)
 
     def test_unwrap_is_ok(self) -> None:
         """.unwrap() returns an ok() value."""

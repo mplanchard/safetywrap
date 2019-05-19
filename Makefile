@@ -22,6 +22,7 @@ fmt: venv
 
 lint: venv
 	$(VENV) pylama src tests
+	$(VENV) mypy src tests
 	$(VENV) black --check --line-length $(LINE_LENGTH) src tests
 
 test: venv
