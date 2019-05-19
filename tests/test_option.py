@@ -4,7 +4,7 @@ import typing as t
 
 import pytest
 
-from result_types import Option, Some, Nothing
+from result_types import Option, Some, Nothing, Result, Ok, Err
 
 
 def _sq(val: int) -> Option[int]:
@@ -32,7 +32,7 @@ class TestOption:
     def test_and(
         self, left: Option[int], right: Option[int], exp: Option[int]
     ) -> None:
-        """Returns an && combination of Options."""
+        """Returns Some() if both options are Some()."""
         assert left.and_(right) == exp
 
     @pytest.mark.parametrize(
@@ -47,8 +47,23 @@ class TestOption:
     def test_or(
         self, left: Option[int], right: Option[int], exp: Option[int]
     ) -> None:
-        """Returns an && combination of Options."""
+        """Returns Some() if either or both is Some()."""
         assert left.or_(right) == exp
+
+    @pytest.mark.parametrize(
+        "left, right, exp",
+        (
+            (Some(2), Nothing(), Some(2)),
+            (Nothing(), Some(2), Some(2)),
+            (Some(1), Some(2), Nothing()),
+            (Nothing(), Nothing(), Nothing()),
+        ),
+    )
+    def test_xor(
+        self, left: Option[int], right: Option[int], exp: Option[int]
+    ) -> None:
+        """Returns Some() IFF only one option is Some()."""
+        assert left.xor(right) == exp
 
     @pytest.mark.parametrize(
         "start, first, second, exp",
@@ -85,3 +100,96 @@ class TestOption:
     ) -> None:
         """Chains option-generating functions if results are `None`."""
         assert start.or_else(fn) == exp
+
+    @pytest.mark.parametrize("exc_cls", (None, IOError))
+    def test_expect_raising(self, exc_cls: t.Type[Exception]) -> None:
+        """Can specify exception msg/cls if value is not Some()."""
+        exp_exc = exc_cls if exc_cls else RuntimeError
+        kwargs = {"exc_cls": exc_cls} if exc_cls else {}
+        msg = "not what I expected"
+
+        with pytest.raises(exp_exc) as exc_info:
+            Nothing().expect(msg, **kwargs)
+
+        assert msg in str(exc_info.value)
+
+    def test_expect_not_raising(self) -> None:
+        """Expecting on a Some() returns the value."""
+        assert Some("hello").expect("not what I expected") == "hello"
+
+    @pytest.mark.parametrize(
+        "start, exp",
+        ((Nothing(), Nothing()), (Some(3), Nothing()), (Some(4), Some(4))),
+    )
+    def test_filter(self, start: Option[int], exp: Option[int]) -> None:
+        """A satisfied predicate returns `Some()`, otherwise `None()`."""
+
+        def is_even(val: int) -> bool:
+            return val % 2 == 0
+
+        assert start.filter(is_even) == exp
+
+    @pytest.mark.parametrize("opt, exp", ((Nothing(), True), (Some(1), False)))
+    def test_is_nothing(self, opt: Option[int], exp: bool) -> None:
+        """"Nothings() are nothing, Some()s are not."""
+        assert opt.is_nothing() is exp
+
+    @pytest.mark.parametrize("opt, exp", ((Nothing(), False), (Some(1), True)))
+    def test_is_some(self, opt: Option[int], exp: bool) -> None:
+        """"Nothings() are nothing, Some()s are not."""
+        assert opt.is_some() is exp
+
+    @pytest.mark.parametrize("opt, exp", ((Nothing(), ()), (Some(5), (5,))))
+    def test_iter(self, opt: Option[int], exp: t.Tuple[int, ...]) -> None:
+        """Iterating on a Some() yields the Some(); on a None() nothing."""
+        assert tuple(opt.iter()) == exp
+
+    @pytest.mark.parametrize(
+        "opt, exp", ((Some("hello"), Some(5)), (Nothing(), Nothing()))
+    )
+    def test_map(self, opt: Option[str], exp: Option[int]) -> None:
+        """Maps fn() onto `Some()` to make a new option, or ignores None()."""
+        assert opt.map(lambda s: len(s)) == exp
+
+    @pytest.mark.parametrize("opt, exp", ((Some("hello"), 5), (Nothing(), -1)))
+    def test_map_or(self, opt: Option[str], exp: Option[int]) -> None:
+        """Maps fn() onto `Some()` & return the value, or return a default."""
+        assert opt.map_or(-1, lambda s: len(s)) == exp
+
+    @pytest.mark.parametrize("opt, exp", ((Some("hello"), 5), (Nothing(), -1)))
+    def test_map_or_else(self, opt: Option[str], exp: Option[int]) -> None:
+        """Maps fn() onto `Some()` & return the value, or return a default."""
+        assert opt.map_or_else(lambda: -1, lambda s: len(s)) == exp
+
+    @pytest.mark.parametrize(
+        "opt, exp", ((Some(2), Ok(2)), (Nothing(), Err("oh no")))
+    )
+    def test_ok_or(self, opt: Option[str], exp: Result[str, int]) -> None:
+        """Map `Some(t)` to `Ok(t)`, or `Nothing()` to an `Err()`."""
+        assert opt.ok_or("oh no") == exp
+
+    @pytest.mark.parametrize(
+        "opt, exp", ((Some(2), Ok(2)), (Nothing(), Err("oh no")))
+    )
+    def test_ok_or_else(self, opt: Option[str], exp: Result[str, int]) -> None:
+        """Map `Some(t)` to `Ok(t)`, or `Nothing()` to an `Err()`."""
+        assert opt.ok_or_else(lambda: "oh no") == exp
+
+    def test_unwrap_raising(self) -> None:
+        """Unwraping a Nothing() raises an error."""
+        with pytest.raises(RuntimeError):
+            Nothing().unwrap()
+
+    def test_unwrap_success(self) -> None:
+        """Unwrapping a Some() returns the wrapped value."""
+        assert Some("thing").unwrap() == "thing"
+
+    @pytest.mark.parametrize("opt, exp", ((Some(2), 2), (Nothing(), 42)))
+    def test_unwrap_or(self, opt: Option[int], exp: int) -> None:
+        """Unwraps a `Some()` or returns a default."""
+        assert opt.unwrap_or(42) == exp
+
+    @pytest.mark.parametrize("opt, exp", ((Some(2), 2), (Nothing(), 42)))
+    def test_unwrap_or_else(self, opt: Option[int], exp: int) -> None:
+        """Unwraps a `Some()` or returns a default."""
+        assert opt.unwrap_or_else(lambda: 42) == exp

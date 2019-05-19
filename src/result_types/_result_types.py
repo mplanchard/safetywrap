@@ -202,6 +202,12 @@ class Option(t.Generic[T]):
             return t.cast(Option[T], self)
         return alternative
 
+    def xor(self, alternative: "Option[T]") -> "Option[T]":
+        """Return Some IFF exactly one of `self`, `alternative` is `Some`."""
+        if self.is_some():
+            return self if alternative.is_nothing() else Nothing()
+        return alternative if alternative.is_some() else Nothing()
+
     def and_then(self, fn: t.Callable[[T], "Option[U]"]) -> "Option[U]":
         """Return `Nothing`, or call `fn` with the `Some` value."""
         if self.is_nothing():

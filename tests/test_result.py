@@ -88,37 +88,33 @@ class TestResult:
         """Test converting a result to an option."""
         assert start.err() == exp
 
-    @pytest.mark.parametrize(
-        "start, exc_cls", ((Err(2), None), (Err(2), IOError))
-    )
-    def test_expect_raising(
-        self, start: Result[int, int], exc_cls: t.Type[Exception]
-    ) -> None:
+    @pytest.mark.parametrize("exc_cls", (None, IOError))
+    def test_expect_raising(self, exc_cls: t.Type[Exception]) -> None:
         """Test expecting a value to be Ok()."""
         exp_exc = exc_cls if exc_cls else RuntimeError
-        with pytest.raises(exp_exc):
-            if exc_cls:
-                start.expect("err", exc_cls=exc_cls)
-            else:
-                start.expect("err")
+        kwargs = {"exc_cls": exc_cls} if exc_cls else {}
+        msg = "not what I expected"
+
+        with pytest.raises(exp_exc) as exc_info:
+            Err(2).expect(msg, **kwargs)
+
+        assert msg in str(exc_info.value)
 
     def test_expect_ok(self) -> None:
         """Expecting an Ok() value returns the value."""
         assert Ok(2).expect("err") == 2
 
-    @pytest.mark.parametrize(
-        "start, exc_cls", ((Ok(2), None), (Ok(2), TypeError))
-    )
-    def test_expect_err_raising(
-        self, start: Result[int, int], exc_cls: t.Type[Exception]
-    ) -> None:
+    @pytest.mark.parametrize("exc_cls", (None, IOError))
+    def test_expect_err_raising(self, exc_cls: t.Type[Exception]) -> None:
         """Test expecting a value to be Ok()."""
         exp_exc = exc_cls if exc_cls else RuntimeError
-        with pytest.raises(exp_exc):
-            if exc_cls:
-                start.expect_err("err", exc_cls=exc_cls)
-            else:
-                start.expect_err("err")
+        kwargs = {"exc_cls": exc_cls} if exc_cls else {}
+        msg = "not what I expected"
+
+        with pytest.raises(exp_exc) as exc_info:
+            Ok(2).expect_err(msg, **kwargs)
+
+        assert msg in str(exc_info.value)
 
     def test_expect_err_err(self) -> None:
         """Expecting an Ok() value returns the value."""
