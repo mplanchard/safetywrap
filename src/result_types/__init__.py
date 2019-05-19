@@ -6,4 +6,5 @@ __version_info__ = tuple(map(lambda part: int(part), __version__.split(".")))
 
 
 # pylama: ignore=W0611
-from result_types._result_types import Err, Ok, Option, Nothing, Some, Result
+from ._interface import Option, Result
+from ._impl import Ok, Err, Some, Nothing
