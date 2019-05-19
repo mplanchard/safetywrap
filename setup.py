@@ -65,10 +65,12 @@ EXTRAS_DEPENDENCIES: t.Dict[str, t.Sequence[str]] = {
     "dev": (
         "black",
         "coverage",
+        "eradicate",
         "mypy",
         "pylama",
         "pytest",
         "pytest-cov",
+        "radon",
         "wheel",
     )
 }

@@ -1,5 +1,6 @@
 VENV = . ./venv/bin/activate;
 TEST = pytest --cov-config=setup.cfg --cov=result_types tests
+LINE_LENGTH = 79
 
 .PHONY: clean build fmt lint test
 
@@ -17,11 +18,11 @@ clean:
 	find . -type d -name "__pycache__" -delete
 
 fmt: venv
-	$(VENV) black --line-length 80 *.py src tests
+	$(VENV) black --line-length $(LINE_LENGTH) *.py src tests
 
 lint: venv
 	$(VENV) pylama src tests
-	$(VENV) black --check --line-length 80 src tests
+	$(VENV) black --check --line-length $(LINE_LENGTH) src tests
 
 test: venv
 	$(VENV) $(TEST)
