@@ -2,6 +2,8 @@
 
 import typing as t
 
+import pytest
+
 from result_types import Some, Nothing, Option, Ok, Err, Result
 
 
@@ -53,3 +55,18 @@ class TestInterfaceConformance:
         assert self._public_method_names(Nothing) == self._public_method_names(
             Option
         )
+
+
+class TestInterfaceAbstractness:
+    """Interfaces should not contain any implementations."""
+
+    def test_result_abstract(self) -> None:
+        """The result interface contains no implementations."""
+        with pytest.raises(NotImplementedError):
+            r: Result[str, str] = Result("a")
+            assert r
+
+    def test_option_abstract(self) -> None:
+        """The option interface contains no implementations."""
+        with pytest.raises(NotImplementedError):
+            Option("a")
