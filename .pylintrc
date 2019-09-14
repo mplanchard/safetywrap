@@ -348,7 +348,7 @@ good-names=i,
            T,
            E,
            U,
-           F
+           F,
            _
 
 # Include a hint for the correct naming format with invalid-name.
