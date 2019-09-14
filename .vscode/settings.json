@@ -1,11 +1,15 @@
 {
     "python.formatting.provider": "black",
-    "python.formatting.blackArgs": ["--line-length", "79"],
+    "python.formatting.blackArgs": ["--line-length", "80"],
 
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [],
+    "python.linting.pydocstyleEnabled": true,
+    "python.linting.pydocstyleArgs": [],
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [],
     "python.linting.mypyEnabled": true,
     "python.linting.mypyArgs": [],
-    "python.linting.pylamaEnabled": true,
-    "python.linting.pylamaArgs": [],
 
     "python.pythonPath": "venv/bin/python",
 }

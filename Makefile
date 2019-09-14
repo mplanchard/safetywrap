@@ -1,8 +1,11 @@
 VENV = . ./venv/bin/activate;
 TEST = pytest --cov-config=setup.cfg --cov=result_types tests
-LINE_LENGTH = 79
+LINE_LENGTH = 80
+PKG_DIR = src
+TEST_DIR = tests
+SRC_FILES = *.py $(PKG_DIR) $(TEST_DIR)
 
-.PHONY: clean build fmt lint test
+.PHONY: build clean distribute fmt lint test
 
 all: fmt lint test
 
@@ -12,20 +15,41 @@ venv/bin/activate: setup.py
 	$(VENV) pip install -e .[dev]
 	touch venv/bin/activate
 
-build: venv
+
+venv-clean:
+	rm -rf venv
+
+build: venv build-clean
 	$(VENV) python setup.py sdist bdist_wheel
+
+
+build-clean:
+	rm -rf build dist
+	rm -rf src/*.egg-info
 
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
+# Requires VERSION to be set on the CLI or in an environment variable,
+# e.g. make VERSION=1.0.0 distribute
+distribute: build
+	$(VENV) scripts/check_ready_to_distribute.py $(VERSION)
+	git tag -s "v$(VERSION)"
+	twine upload -s dist/*
+	git push --tags
+
 fmt: venv
-	$(VENV) black --line-length $(LINE_LENGTH) *.py src tests
+	$(VENV) black --line-length $(LINE_LENGTH) $(SRC_FILES)
 
 lint: venv
-	$(VENV) pylama src tests
-	$(VENV) mypy src tests
-	$(VENV) black --check --line-length $(LINE_LENGTH) src tests
+	$(VENV) black --check --line-length $(LINE_LENGTH) $(SRC_FILES)
+	$(VENV) pydocstyle $(SRC_FILES)
+	$(VENV) flake8 $(SRC_FILES)
+	$(VENV) pylint --errors-only $(SRC_FILES)
+	$(VENV) mypy $(SRC_FILES)
+
+setup: venv-clean venv
 
 test: venv
 	$(VENV) $(TEST)
@@ -43,3 +67,5 @@ test-3.8-rc:
 		python:3.8-rc bash -c "make clean && pip install -e .[dev] && $(TEST); make clean"
 
 test-all-versions: test-3.6 test-3.7 test-3.8
+
+
