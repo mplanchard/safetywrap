@@ -8,6 +8,16 @@ def test_pass() -> None:
     assert True
 
 
-def test_import() -> None:
-    """Ensure we can import our package."""
-    assert result_types.__version__
+def test_public_interface() -> None:
+    """Test the public package interface."""
+    exp_attrs = (
+        "__version__",
+        "__version_info__",
+        "Option",
+        "Result",
+        "Ok",
+        "Err",
+        "Some",
+        "Nothing",
+    )
+    assert all(map(lambda attr: bool(getattr(result_types, attr)), exp_attrs))
