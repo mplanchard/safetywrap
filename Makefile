@@ -19,6 +19,15 @@ venv/bin/activate: setup.py
 venv-clean:
 	rm -rf venv
 
+
+venv-refresh: venv-clean venv
+	$(VENV) pip install -e .[dev]
+
+
+venv-update: venv
+	$(VENV) pip install -e .[dev]
+
+
 build: venv build-clean
 	$(VENV) python setup.py sdist bdist_wheel
 
