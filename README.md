@@ -4,6 +4,16 @@
 
 Fully typesafe, Rust-like result types for Python
 
+## Usage
+
+This library provides generic `Result[T, E]` and `Option[T]` types for Python,
+as well as `Ok(t)` and `Err(e)` implementations of the `Result` type, and
+`Some(t)` and `Nothing` implementations of the `Option` type.
+
+For an overview of the Result type in Rust, check out [Recoverable Errors with `Result`](https://doc.rust-lang.org/1.30.0/book/2018-edition/ch09-02-recoverable-errors-with-result.html)
+from the Rust book.
+
+
 ## Contributing
 
 Contributions are welcome! To get started, you'll just need a local install
