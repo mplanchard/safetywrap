@@ -1,5 +1,11 @@
 image: python:3
 
+.base_test:
+  stage: test
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'
+  script:
+    - make test
+
 stages:
   - lint
   - test
@@ -10,22 +16,13 @@ lint:
     - make lint
 
 test-3.6:
+  extends: .base_test
   image: python:3.6
-  stage: test
-  coverage: '/^TOTAL.*\s+(\d+\%)$/'
-  script:
-    - make test
 
 test-3.7:
+  extends: .base_test
   image: python:3.7
-  stage: test
-  coverage: '/^TOTAL.*\s+(\d+\%)$/'
-  script:
-    - make test
 
 test-3.8-rc:
+  extends: .base_test
   image: python:3.8-rc
-  stage: test
-  coverage: '/^TOTAL.*\s+(\d+\%)$/'
-  script:
-    - make test
