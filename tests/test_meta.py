@@ -88,9 +88,25 @@ class TestNoConcretesInInterfaces:
                 else:
                     break
 
+    @staticmethod
+    def filter_meths(cls: t.Type, meth: str) -> bool:
+        if not callable(getattr(cls, meth)):
+            return False
+        if not meth.startswith("_"):
+            return True
+        check_magic_methods = ("eq", "init", "iter", "ne", "repr", "str")
+
+        if any(map(lambda m: meth == "__%s__" % m, check_magic_methods)):
+            return True
+
+        return False
+
     @pytest.mark.parametrize(
         "meth",
-        filter(lambda attr: callable(getattr(_Result, attr)), _Result.__dict__),
+        filter(
+            lambda m: TestNoConcretesInInterfaces.filter_meths(_Result, m),
+            _Result.__dict__,
+        ),
     )
     def test_no_concrete_result_methods(self, meth: str) -> None:
         """The result interface contains no implementations."""
@@ -98,7 +114,10 @@ class TestNoConcretesInInterfaces:
 
     @pytest.mark.parametrize(
         "meth",
-        filter(lambda attr: callable(getattr(_Option, attr)), _Option.__dict__),
+        filter(
+            lambda m: TestNoConcretesInInterfaces.filter_meths(_Option, m),
+            _Option.__dict__,
+        ),
     )
     def test_no_concrete_option_methods(self, meth: str) -> None:
         """The option interface contains no implementations."""
