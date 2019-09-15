@@ -68,6 +68,8 @@ EXTRAS_DEPENDENCIES: t.Dict[str, t.Sequence[str]] = {
             "black",
             "coverage",
             "flake8",
+            "ipdb",
+            "ipython",
             "mypy",
             "pydocstyle",
             "pylint",
