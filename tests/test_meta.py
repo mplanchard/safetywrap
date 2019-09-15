@@ -4,6 +4,7 @@ import typing as t
 
 import pytest
 
+from result_types._interface import _Option, _Result
 from result_types import Some, Nothing, Option, Ok, Err, Result
 
 
@@ -35,38 +36,98 @@ class TestInterfaceConformance:
     def test_ok_interface(self) -> None:
         """"The Ok interface matches Result."""
         assert self._public_method_names(Ok) == self._public_method_names(
-            Result
+            _Result
         )
 
     def test_err_interface(self) -> None:
         """The Err interface matches Result."""
         assert self._public_method_names(Err) == self._public_method_names(
-            Result
+            _Result
         )
 
     def test_some_interface(self) -> None:
         """The Some interface matches Option."""
         assert self._public_method_names(Some) == self._public_method_names(
-            Option
+            _Option
         )
 
     def test_nothing_interface(self) -> None:
         """The Nothing interface matches Option."""
         assert self._public_method_names(Nothing) == self._public_method_names(
-            Option
+            _Option
         )
 
 
-class TestInterfaceAbstractness:
-    """Interfaces should not contain any implementations."""
+class TestNoBaseInstantiations:
+    """Base types are not instantiable"""
 
-    def test_result_abstract(self) -> None:
-        """The result interface contains no implementations."""
+    def test_result_cannot_be_instantiated(self) -> None:
+        """Result cannot be instantiated"""
         with pytest.raises(NotImplementedError):
             r: Result[str, str] = Result("a")
             assert r
 
-    def test_option_abstract(self) -> None:
-        """The option interface contains no implementations."""
+    def test_option_cannot_be_instantiated(self) -> None:
+        """Option cannot be instantiated"""
         with pytest.raises(NotImplementedError):
             Option("a")
+
+
+class TestNoConcretesInInterfaces:
+    """Interfaces contain only abstract methods."""
+
+    @staticmethod
+    def assert_not_concrete(kls: t.Type, meth: str) -> None:
+        """Assert the method on the class is not concrete."""
+        with pytest.raises(NotImplementedError):
+            for num_args in range(10):
+                try:
+                    getattr(kls, meth)(*map(str, range(num_args)))
+                except TypeError:
+                    continue
+                else:
+                    break
+
+    @pytest.mark.parametrize(
+        "meth",
+        filter(lambda attr: callable(getattr(_Result, attr)), _Result.__dict__),
+    )
+    def test_no_concrete_result_methods(self, meth: str) -> None:
+        """The result interface contains no implementations."""
+        self.assert_not_concrete(_Result, meth)
+
+    @pytest.mark.parametrize(
+        "meth",
+        filter(lambda attr: callable(getattr(_Option, attr)), _Option.__dict__),
+    )
+    def test_no_concrete_option_methods(self, meth: str) -> None:
+        """The option interface contains no implementations."""
+        self.assert_not_concrete(_Option, meth)
+
+
+class TestImplementationDetails:
+    """Some implementation details need to be tested."""
+
+    def test_nothing_singleton(self) -> None:
+        """Ensure Nothing() is a singleton."""
+        assert Nothing() is Nothing() is Nothing()
+
+    def test_ok_immutable(self) -> None:
+        """Results may not be mutated."""
+        with pytest.raises(TypeError):
+            Ok("a")._value = "some other value"
+
+    def test_err_immutable(self) -> None:
+        """Results may not be mutated."""
+        with pytest.raises(TypeError):
+            Err("a")._value = "some other value"
+
+    def test_some_immutable(self) -> None:
+        """Options may not be mutated."""
+        with pytest.raises(TypeError):
+            Some("a")._value = "some other value"
+
+    def test_nothing_immutable(self) -> None:
+        """Options may not be mutated."""
+        with pytest.raises(TypeError):
+            Nothing()._value = None

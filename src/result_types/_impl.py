@@ -1,51 +1,142 @@
-"""Implementations of the Result interface."""
+"""Implementations of Ok, Err, Some, and None."""
 
 import typing as t
+from functools import partial, wraps
 
-from ._interface import Result, Option
+from ._interface import _Option, _Result
+from ._mixin import Immutable
 
-# pylint: disable=invalid-name
 
 T = t.TypeVar("T")
 E = t.TypeVar("E")
 U = t.TypeVar("U")
 F = t.TypeVar("F")
 
+ExcType = t.TypeVar("ExcType", bound=Exception)
 
-class Ok(Result[T, E]):
+WrappedFunc = t.Callable[..., t.Any]
+WrappedFn = t.TypeVar("WrappedFn", bound=WrappedFunc)
+
+Args = t.TypeVar("Args")
+Kwargs = t.TypeVar("Kwargs")
+
+# pylint: disable=super-init-not-called
+
+
+# pylint: disable=abstract-method
+class Result(_Result[T, E]):
+    """Base implementation for Result types."""
+
+    @staticmethod
+    def from_(  # type: ignore
+        fn: t.Callable[[], T], exc_type: t.Type[ExcType] = Exception
+    ) -> "_Result[T, ExcType]":
+        """Call `fn` and wrap its result in an `Ok()`.
+
+        If an exception is intercepted, return `Err(exception)`. By
+        default, any `Exception` will be intercepted. If you specify
+        `exc_type`, only that exception will be intercepted.
+        """
+        try:
+            return Ok(fn())
+        except exc_type as exc:
+            return Err(exc)
+
+    @staticmethod
+    def wrap(  # type: ignore
+        fn: t.Callable[..., T],
+        intercept: t.Iterable[t.Type[ExcType]] = (Exception,),
+    ) -> t.Callable[..., "_Result[T, ExcType]"]:
+        """Intercept excpetions and automatically return a Result.
+
+        If the function
+        """
+
+        exceptions = tuple(intercept)
+
+        @wraps(fn)
+        def wrapper(*args: t.Any, **kwargs: t.Any) -> Result[T, ExcType]:
+            try:
+                return Ok(fn(*args, **kwargs))
+            except exceptions as exc:
+                return Err(exc)
+
+        return wrapper
+
+    @staticmethod
+    def wrap_for(
+        exceptions: t.Iterable[t.Type[ExcType]],
+    ) -> t.Callable[
+        [t.Callable[..., T]], t.Callable[..., "_Result[T, ExcType]"]
+    ]:
+        """Create a wrapper/decorator to intercept the given exceptions."""
+        return partial(Result.wrap, intercept=exceptions)
+
+
+class Option(_Option[T]):
+    """Base implementation for Option types."""
+
+    @staticmethod
+    def of(value: t.Optional[T]) -> "Option[T]":
+        """Construct an Option[T] from an Optional[T].
+
+        If the value is None, Nothing() is returned. If the value is
+        not None, Some(value) is returned.
+        """
+        if value is None:
+            return Nothing()
+        return Some(value)
+
+    @staticmethod
+    def wrap(
+        fn: t.Callable[..., t.Optional[T]]
+    ) -> t.Callable[..., "Option[T]"]:
+        """Wrap a function to convert its result to an Option."""
+
+        @wraps(fn)
+        def wrapper(*args: t.Any, **kwargs: t.Any) -> Option[T]:
+            return Option.of(fn(*args, **kwargs))
+
+        return wrapper
+
+
+# pylint: enable=abstract-method
+
+
+class Ok(Result[T, E], Immutable):
     """Standard wrapper for results."""
 
-    _value: T
+    __slots__ = ("_value",)
 
     def __init__(self, result: T) -> None:
         """Wrap a result."""
-        self._value = result
+        self._value: T = result
+        Immutable.__init__(self)
 
-    def and_(self, res: "Result[U, E]") -> "Result[U, E]":
+    def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
         """Return `res` if the result is `Ok`, otherwise return `self`."""
         return res
 
-    def or_(self, res: "Result[T, F]") -> "Result[T, F]":
+    def or_(self, res: "_Result[T, F]") -> "_Result[T, F]":
         """Return `res` if the result is `Err`, otherwise `self`."""
         return t.cast(Result[T, F], self)
 
-    def and_then(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
+    def and_then(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
         """Call `fn` if Ok, or ignore an error.
 
         This can be used to chain functions that return results.
         """
-        res: Result[U, E] = fn(self._value)
-        return res
+        return fn(self._value)
 
-    def or_else(self, fn: t.Callable[[E], "Result[T, F]"]) -> "Result[T, F]":
+    def or_else(self, fn: t.Callable[[E], "_Result[T, F]"]) -> "_Result[T, F]":
         """Return `self` if `Ok`, or call `fn` with `self` if `Err`."""
         return t.cast(Result[T, F], self)
 
-    def err(self) -> "Option[E]":
+    def err(self) -> _Option[E]:
         """Return Err value if result is Err."""
         return Nothing()
 
-    def ok(self) -> "Option[T]":
+    def ok(self) -> _Option[T]:
         """Return OK value if result is Ok."""
         return Some(self._value)
 
@@ -80,13 +171,13 @@ class Ok(Result[T, E]):
 
         If the result is `Err`, the iterator will contain no items.
         """
-        yield self._value
+        return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> "Result[U, E]":
+    def map(self, fn: t.Callable[[T], U]) -> "_Result[U, E]":
         """Map a function onto an okay result, or ignore an error."""
         return Ok(fn(self._value))
 
-    def map_err(self, fn: t.Callable[[E], F]) -> "Result[T, F]":
+    def map_err(self, fn: t.Callable[[E], F]) -> "_Result[T, F]":
         """Map a function onto an error, or ignore a success."""
         return t.cast(Result[T, F], self)
 
@@ -106,9 +197,18 @@ class Ok(Result[T, E]):
         """Return the `Ok` value, or the return from `fn`."""
         return self._value
 
+    def __iter__(self) -> t.Iterator[T]:
+        """Return a one-item iterator whose sole member is the result if `Ok`.
+
+        If the result is `Err`, the iterator will contain no items.
+        """
+        yield self._value
+
     def __eq__(self, other: t.Any) -> bool:
         """Compare two results. They are equal if their values are equal."""
-        if not isinstance(other, Ok):
+        if not isinstance(other, Result):
+            return False
+        if not other.is_ok():
             return False
         eq: bool = self._value == other.unwrap()
         return eq
@@ -126,39 +226,40 @@ class Ok(Result[T, E]):
         return self.__str__()
 
 
-class Err(Result[T, E]):
+class Err(Result[T, E], Immutable):
     """Standard wrapper for results."""
 
-    _value: E
+    __slots__ = ("_value",)
 
     def __init__(self, result: E) -> None:
         """Wrap a result."""
         self._value = result
+        Immutable.__init__(self)
 
-    def and_(self, res: "Result[U, E]") -> "Result[U, E]":
+    def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
         """Return `res` if the result is `Ok`, otherwise return `self`."""
         return t.cast(Result[U, E], self)
 
-    def or_(self, res: "Result[T, F]") -> "Result[T, F]":
+    def or_(self, res: "_Result[T, F]") -> "_Result[T, F]":
         """Return `res` if the result is `Err`, otherwise `self`."""
         return res
 
-    def and_then(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
+    def and_then(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
         """Call `fn` if Ok, or ignore an error.
 
         This can be used to chain functions that return results.
         """
         return t.cast(Result[U, E], self)
 
-    def or_else(self, fn: t.Callable[[E], "Result[T, F]"]) -> "Result[T, F]":
+    def or_else(self, fn: t.Callable[[E], "_Result[T, F]"]) -> "_Result[T, F]":
         """Return `self` if `Ok`, or call `fn` with `self` if `Err`."""
         return fn(self._value)
 
-    def err(self) -> "Option[E]":
+    def err(self) -> _Option[E]:
         """Return Err value if result is Err."""
         return Some(self._value)
 
-    def ok(self) -> "Option[T]":
+    def ok(self) -> _Option[T]:
         """Return OK value if result is Ok."""
         return Nothing()
 
@@ -193,13 +294,13 @@ class Err(Result[T, E]):
 
         If the result is `Err`, the iterator will contain no items.
         """
-        yield from []
+        return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> "Result[U, E]":
+    def map(self, fn: t.Callable[[T], U]) -> "_Result[U, E]":
         """Map a function onto an okay result, or ignore an error."""
         return t.cast(Result[U, E], self)
 
-    def map_err(self, fn: t.Callable[[E], F]) -> "Result[T, F]":
+    def map_err(self, fn: t.Callable[[E], F]) -> "_Result[T, F]":
         """Map a function onto an error, or ignore a success."""
         return Err(fn(self._value))
 
@@ -219,9 +320,19 @@ class Err(Result[T, E]):
         """Return the `Ok` value, or the return from `fn`."""
         return fn(self._value)
 
+    def __iter__(self) -> t.Iterator[T]:
+        """Return a one-item iterator whose sole member is the result if `Ok`.
+
+        If the result is `Err`, the iterator will contain no items.
+        """
+        _: t.Tuple[T, ...] = ()
+        yield from _
+
     def __eq__(self, other: t.Any) -> bool:
         """Compare two results. They are equal if their values are equal."""
-        if not isinstance(other, Err):
+        if not isinstance(other, Result):
+            return False
+        if not other.is_err():
             return False
         eq: bool = self._value == other.unwrap_err()
         return eq
@@ -239,33 +350,35 @@ class Err(Result[T, E]):
         return self.__str__()
 
 
-class Some(Option[T]):
+class Some(Option[T], Immutable):
     """A value that may be `Some` or `Nothing`."""
 
-    _value: T
+    __slots__ = ("_value",)
 
     def __init__(self, value: T) -> None:
+        """Wrap value in a `Some()`."""
         self._value = value
+        Immutable.__init__(self)
 
-    def and_(self, alternative: "Option[U]") -> "Option[U]":
+    def and_(self, alternative: _Option[U]) -> _Option[U]:
         """Return `Nothing` if `self` is `Nothing`, or the `alternative`."""
         return alternative
 
-    def or_(self, alternative: "Option[T]") -> "Option[T]":
+    def or_(self, alternative: _Option[T]) -> _Option[T]:
         """Return option if it is `Some`, or the `alternative`."""
         return self
 
-    def xor(self, alternative: "Option[T]") -> "Option[T]":
+    def xor(self, alternative: _Option[T]) -> _Option[T]:
         """Return Some IFF exactly one of `self`, `alternative` is `Some`."""
         return (
-            t.cast(Option[T], self) if alternative.is_nothing() else Nothing()
+            t.cast(_Option[T], self) if alternative.is_nothing() else Nothing()
         )
 
-    def and_then(self, fn: t.Callable[[T], "Option[U]"]) -> "Option[U]":
+    def and_then(self, fn: t.Callable[[T], _Option[U]]) -> _Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
         return fn(self._value)
 
-    def or_else(self, fn: t.Callable[[], "Option[T]"]) -> "Option[T]":
+    def or_else(self, fn: t.Callable[[], _Option[T]]) -> _Option[T]:
         """Return option if it is `Some`, or calculate an alternative."""
         return self
 
@@ -277,7 +390,7 @@ class Some(Option[T]):
         """
         return self._value
 
-    def filter(self, predicate: t.Callable[[T], bool]) -> "Option[T]":
+    def filter(self, predicate: t.Callable[[T], bool]) -> _Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
 
         If `self` is `Some`, call `predicate` with the wrapped value and
@@ -287,8 +400,7 @@ class Some(Option[T]):
           is `True`
         * `Nothing` if the predicate is `False`
         """
-        predicate_satisfied = predicate(t.cast(T, self._value))
-        if predicate_satisfied:
+        if predicate(self._value):
             return self
         return Nothing()
 
@@ -302,9 +414,9 @@ class Some(Option[T]):
 
     def iter(self) -> t.Iterator[T]:
         """Return an iterator over the possibly contained value."""
-        yield self._value
+        return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> "Option[U]":
+    def map(self, fn: t.Callable[[T], U]) -> _Option[U]:
         """Apply `fn` to the contained value if any."""
         return Some(fn(self._value))
 
@@ -346,6 +458,10 @@ class Some(Option[T]):
         """Return the contained value or calculate a default."""
         return self._value
 
+    def __iter__(self) -> t.Iterator[T]:
+        """Iterate over the contained value if present."""
+        yield self._value
+
     def __eq__(self, other: t.Any) -> bool:
         """Options are equal if their values are equal."""
         if not isinstance(other, Some):
@@ -358,38 +474,57 @@ class Some(Option[T]):
         return not self == other
 
     def __str__(self) -> str:
+        """Represent the Some() as a string."""
         return f"Some({repr(self._value)})"
 
     def __repr__(self) -> str:
+        """Return a string representation of the Some()."""
         return self.__str__()
 
 
-class Nothing(Option[T]):
+class Nothing(Option[T], Immutable):
     """A value that may be `Some` or `Nothing`."""
 
-    _value: None
+    __slots__ = ("_value",)
 
-    def __init__(self, value: None = None) -> None:
+    _instance = None
+
+    def __init__(self, _: None = None) -> None:
         """Create a Nothing()."""
-        self._value = None
+        if self._instance is None:
+            # The singleton is being instantiated the first time
+            self._value = None
+            Immutable.__init__(self)
 
-    def and_(self, alternative: "Option[U]") -> "Option[U]":
+    def __new__(cls, _: None = None) -> "Nothing[T]":
+        """Ensure we are a singleton."""
+        if cls._instance is None:
+            # Create the instance
+            inst = super().__new__(cls)
+            # And instantiate it
+            cls.__init__(inst)
+            # Then assign it to the class' _instance var, so no other
+            # instances can be created
+            cls._instance = inst
+        return t.cast("Nothing[T]", cls._instance)
+
+    def and_(self, alternative: _Option[U]) -> _Option[U]:
         """Return `Nothing` if `self` is `Nothing`, or the `alternative`."""
-        return t.cast(Option[U], self)
+        return t.cast(_Option[U], self)
 
-    def or_(self, alternative: "Option[T]") -> "Option[T]":
+    def or_(self, alternative: _Option[T]) -> _Option[T]:
         """Return option if it is `Some`, or the `alternative`."""
         return alternative
 
-    def xor(self, alternative: "Option[T]") -> "Option[T]":
+    def xor(self, alternative: _Option[T]) -> _Option[T]:
         """Return Some IFF exactly one of `self`, `alternative` is `Some`."""
         return alternative if alternative.is_some() else self
 
-    def and_then(self, fn: t.Callable[[T], "Option[U]"]) -> "Option[U]":
+    def and_then(self, fn: t.Callable[[T], _Option[U]]) -> _Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
-        return t.cast(Option[U], self)
+        return t.cast(_Option[U], self)
 
-    def or_else(self, fn: t.Callable[[], "Option[T]"]) -> "Option[T]":
+    def or_else(self, fn: t.Callable[[], _Option[T]]) -> _Option[T]:
         """Return option if it is `Some`, or calculate an alternative."""
         return fn()
 
@@ -401,7 +536,7 @@ class Nothing(Option[T]):
         """
         raise exc_cls(msg)
 
-    def filter(self, predicate: t.Callable[[T], bool]) -> "Option[T]":
+    def filter(self, predicate: t.Callable[[T], bool]) -> _Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
 
         If `self` is `Some`, call `predicate` with the wrapped value and
@@ -423,11 +558,11 @@ class Nothing(Option[T]):
 
     def iter(self) -> t.Iterator[T]:
         """Return an iterator over the possibly contained value."""
-        yield from []
+        return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> "Option[U]":
+    def map(self, fn: t.Callable[[T], U]) -> _Option[U]:
         """Apply `fn` to the contained value if any."""
-        return t.cast(Option[U], self)
+        return t.cast(_Option[U], self)
 
     def map_or(self, default: U, fn: t.Callable[[T], U]) -> U:
         """Apply `fn` to contained value, or return the default."""
@@ -467,6 +602,11 @@ class Nothing(Option[T]):
         """Return the contained value or calculate a default."""
         return fn()
 
+    def __iter__(self) -> t.Iterator[T]:
+        """Iterate over the contained value if present."""
+        _: t.Tuple[T, ...] = ()
+        yield from _
+
     def __eq__(self, other: t.Any) -> bool:
         """Options are equal if their values are equal."""
         if not isinstance(other, Nothing):
@@ -478,7 +618,9 @@ class Nothing(Option[T]):
         return not self == other
 
     def __str__(self) -> str:
+        """Return a string representation of Nothing()."""
         return f"Nothing()"
 
     def __repr__(self) -> str:
+        """Return a string representation of Nothing()."""
         return self.__str__()

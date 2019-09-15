@@ -35,7 +35,7 @@ class TypedDecorators(Plugin):
     def get_function_hook(  # type: ignore
         self, fullname: str
     ) -> t.Optional[t.Callable[[FunctionContext], t.Type]]:
-        print(fullname)
+        # print(fullname)
         if fullname in DECORATORS:
             return update_decorator  # type: ignore
         return None

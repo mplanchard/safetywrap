@@ -8,16 +8,21 @@ def test_pass() -> None:
     assert True
 
 
-def test_public_interface() -> None:
-    """Test the public package interface."""
-    exp_attrs = (
-        "__version__",
-        "__version_info__",
-        "Option",
-        "Result",
-        "Ok",
-        "Err",
-        "Some",
-        "Nothing",
-    )
-    assert all(map(lambda attr: bool(getattr(result_types, attr)), exp_attrs))
+class TestPublicInterface:
+    """Test the interface to be sure we don't accidentally drop things."""
+
+    def test_top_level(self) -> None:
+        """Test the public package interface."""
+        exp_attrs = (
+            "__version__",
+            "__version_info__",
+            "Option",
+            "Result",
+            "Ok",
+            "Err",
+            "Some",
+            "Nothing",
+        )
+        assert all(
+            map(lambda attr: bool(getattr(result_types, attr)), exp_attrs)
+        )

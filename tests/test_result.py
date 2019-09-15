@@ -17,6 +17,107 @@ def _err(val: int) -> Result[int, int]:
     return Err(val)
 
 
+def _raises(exc: t.Type[Exception]) -> None:
+    raise exc
+
+
+class TestResultConstructors:
+    """Test Result constructors."""
+
+    @pytest.mark.parametrize(
+        "fn, exp",
+        (
+            (lambda: 5, Ok(5)),
+            (lambda: _raises(TypeError), Err(TypeError)),
+            (lambda: Nothing(), Ok(Nothing())),
+        ),
+    )
+    def test_from_(self, fn: t.Callable, exp: Result) -> None:
+        """Test getting a result from a callable."""
+        if exp.is_err():
+            assert isinstance(Result.from_(fn).unwrap_err(), exp.unwrap_err())
+        else:
+            assert Result.from_(fn) == exp
+
+    @pytest.mark.parametrize(
+        "fn, exp",
+        (
+            (lambda: 5, Ok(5)),
+            (lambda: _raises(TypeError), Err(TypeError)),
+            (lambda: Some("foo"), Ok(Some("foo"))),
+        ),
+    )
+    def test_wrap(self, fn: t.Callable, exp: Result) -> None:
+        """A wrapped function returns Ok() on success or Err() on exception."""
+        wrapped = Result.wrap(fn)  # type: ignore
+        res = wrapped()
+
+        if exp.is_err():
+            assert isinstance(res.unwrap_err(), exp.unwrap_err())
+        else:
+            assert wrapped() == exp
+
+        @Result.wrap
+        def _decorated() -> t.Any:
+            return fn()
+
+        res = _decorated()
+
+        if exp.is_err():
+            assert isinstance(res.unwrap_err(), exp.unwrap_err())
+        else:
+            assert wrapped() == exp
+
+    @pytest.mark.parametrize(
+        "fn, excs, exp",
+        (
+            (lambda: 5, (Exception,), Ok(5)),
+            (lambda: _raises(TypeError), (Exception,), Err(TypeError)),
+            (lambda: _raises(TypeError), (ValueError,), TypeError),
+            (
+                lambda: _raises(FloatingPointError),
+                (ArithmeticError,),
+                Err(FloatingPointError),
+            ),
+            (
+                lambda: _raises(TypeError),
+                (ValueError, TypeError),
+                Err(TypeError),
+            ),
+        ),
+    )
+    def test_wrap_for(
+        self, fn: t.Callable, excs: t.Tuple[t.Type[Exception], ...], exp: Result
+    ) -> None:
+        """Wrap_for allows intercepting only specific decorators."""
+        wrapped = Result.wrap_for(excs)(fn)  # type: ignore
+
+        @Result.wrap_for(excs)
+        def _decorated() -> t.Any:
+            return fn()
+
+        if isinstance(exp, type) and issubclass(exp, Exception):
+            with pytest.raises(exp):
+                wrapped()
+            with pytest.raises(exp):
+                _decorated()
+            return
+
+        res = wrapped()
+
+        if exp.is_err():
+            assert isinstance(res.unwrap_err(), exp.unwrap_err())
+        else:
+            assert wrapped() == exp
+
+        res = _decorated()
+
+        if exp.is_err():
+            assert isinstance(res.unwrap_err(), exp.unwrap_err())
+        else:
+            assert wrapped() == exp
+
+
 class TestResult:
     """Test the result type."""
 
@@ -201,9 +302,7 @@ class TestResult:
         """.unwrap_err() returns an error value."""
         assert Err(5).unwrap_err() == 5
 
-    @pytest.mark.parametrize(
-        "start, alt, exp", ((Ok(5), 6, 5), (Err(5), 6, 6))
-    )
+    @pytest.mark.parametrize("start, alt, exp", ((Ok(5), 6, 5), (Err(5), 6, 6)))
     def test_unwrap_or(
         self, start: Result[int, int], alt: int, exp: int
     ) -> None:

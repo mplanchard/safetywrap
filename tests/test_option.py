@@ -12,9 +12,50 @@ def _sq(val: int) -> Option[int]:
     return Some(val ** 2)
 
 
-def _nothing(val: int) -> Option[int]:
+def _nothing(_: int) -> Option[int]:
     """Just return nothing."""
     return Nothing()
+
+
+class TestOptionConstructors:
+    """Test option constructors."""
+
+    @pytest.mark.parametrize(
+        "val, exp",
+        (
+            (5, Some(5)),
+            (None, Nothing()),
+            ("", Some("")),
+            (False, Some(False)),
+            ({}, Some({})),
+            ([], Some([])),
+        ),
+    )
+    def test_of(self, val: t.Any, exp: Option) -> None:
+        """Option.of() returns an Option from an Optional."""
+        assert Option.of(val) == exp
+
+    @pytest.mark.parametrize(
+        "fn, exp",
+        (
+            (lambda: None, Nothing()),
+            (lambda: 5, Some(5)),
+            (lambda: {}, Some({})),
+            (lambda: Some(5), Some(Some(5))),
+        ),
+    )
+    def test_wrap(
+        self, fn: t.Callable[[], t.Optional[t.Any]], exp: Option
+    ) -> None:
+        """Test wrapping/decorating a function to return an Option."""
+        wrapped: t.Callable[..., Option[t.Any]] = Option.wrap(fn)
+        assert wrapped() == exp
+
+        @Option.wrap
+        def fn_fn() -> t.Optional[t.Any]:
+            return fn()
+
+        assert fn_fn() == exp
 
 
 class TestOption:
@@ -142,14 +183,14 @@ class TestOption:
     @pytest.mark.parametrize("opt, exp", ((Nothing(), ()), (Some(5), (5,))))
     def test_iter(self, opt: Option[int], exp: t.Tuple[int, ...]) -> None:
         """Iterating on a Some() yields the Some(); on a None() nothing."""
-        assert tuple(opt.iter()) == exp
+        assert tuple(opt.iter()) == tuple(iter(opt)) == exp
 
     @pytest.mark.parametrize(
         "opt, exp", ((Some("hello"), Some(5)), (Nothing(), Nothing()))
     )
     def test_map(self, opt: Option[str], exp: Option[int]) -> None:
         """Maps fn() onto `Some()` to make a new option, or ignores None()."""
-        assert opt.map(lambda s: len(s)) == exp
+        assert opt.map(len) == exp
 
     @pytest.mark.parametrize("opt, exp", ((Some("hello"), 5), (Nothing(), -1)))
     def test_map_or(self, opt: Option[str], exp: Option[int]) -> None:
