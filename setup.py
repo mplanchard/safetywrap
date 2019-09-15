@@ -60,19 +60,19 @@ CLASSIFIERS = [
 
 PACKAGE_DEPENDENCIES: t.Tuple[str, ...] = ()
 SETUP_DEPENDENCIES: t.Tuple[str, ...] = ()
-TEST_DEPENDENCIES: t.Tuple[str, ...] = ("pytest", "typeguard")
+TEST_DEPENDENCIES: t.Tuple[str, ...] = ("pytest", "pytest-cov", "typeguard")
 EXTRAS_DEPENDENCIES: t.Dict[str, t.Sequence[str]] = {
     "dev": (
-        "black",
-        "coverage",
-        "flake8",
-        "mypy",
-        "pydocstyle",
-        "pylint",
-        "pytest",
-        "pytest-cov",
-        "typeguard",
-        "wheel",
+        TEST_DEPENDENCIES
+        + (
+            "black",
+            "coverage",
+            "flake8",
+            "mypy",
+            "pydocstyle",
+            "pylint",
+            "wheel",
+        )
     )
 }
 
