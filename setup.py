@@ -26,9 +26,9 @@ KEYWORDS = ["python", "rust", "result", "option", "types", "typesafe"]
 CLASSIFIERS = [
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers for all
     # available setup classifiers
-    "Development Status :: 1 - Planning",
+    # "Development Status :: 1 - Planning",
     # 'Development Status :: 2 - Pre-Alpha',
-    # 'Development Status :: 3 - Alpha',
+    "Development Status :: 3 - Alpha",
     # 'Development Status :: 4 - Beta',
     # 'Development Status :: 5 - Production/Stable',
     # 'Development Status :: 6 - Mature',
@@ -60,17 +60,18 @@ CLASSIFIERS = [
 
 PACKAGE_DEPENDENCIES: t.Tuple[str, ...] = ()
 SETUP_DEPENDENCIES: t.Tuple[str, ...] = ()
-TEST_DEPENDENCIES: t.Tuple[str, ...] = ("pytest",)
+TEST_DEPENDENCIES: t.Tuple[str, ...] = ("pytest", "typeguard")
 EXTRAS_DEPENDENCIES: t.Dict[str, t.Sequence[str]] = {
     "dev": (
         "black",
         "coverage",
-        "eradicate",
+        "flake8",
         "mypy",
-        "pylama",
+        "pydocstyle",
+        "pylint",
         "pytest",
         "pytest-cov",
-        "radon",
+        "typeguard",
         "wheel",
     )
 }
@@ -81,7 +82,7 @@ EXTRAS_DEPENDENCIES: t.Dict[str, t.Sequence[str]] = {
 ########################################################################
 
 ENTRY_POINTS: t.Union[str, t.Dict[str, t.Union[str, t.Sequence[str]]]] = {}
-PACKAGE_DATA: t.Dict[str, t.Sequence[str]] = {}
+PACKAGE_DATA: t.Dict[str, t.Sequence[str]] = {"result_types": ["py.typed"]}
 
 
 ########################################################################
