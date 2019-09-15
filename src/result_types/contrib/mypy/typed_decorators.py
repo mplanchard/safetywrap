@@ -32,9 +32,12 @@ def update_decorator(function_ctx: FunctionContext) -> CallableType:
 
 
 class TypedDecorators(Plugin):
+    """Provide a typed decorator plugin."""
+
     def get_function_hook(  # type: ignore
         self, fullname: str
     ) -> t.Optional[t.Callable[[FunctionContext], t.Type]]:
+        """Get the function hook."""
         # print(fullname)
         if fullname in DECORATORS:
             return update_decorator  # type: ignore
