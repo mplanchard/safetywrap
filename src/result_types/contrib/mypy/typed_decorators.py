@@ -3,6 +3,8 @@
 import typing as t
 
 
+# pylint: disable=no-name-in-module
+
 from mypy.plugin import FunctionContext, Plugin
 from mypy.types import CallableType
 
