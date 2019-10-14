@@ -243,7 +243,7 @@ class TestResult:
     )
     def test_map(self, start: Result[int, str], exp: Result[int, str]) -> None:
         """.map() will map onto Ok() and ignore Err()."""
-        assert start.map(lambda x: x ** 2) == exp
+        assert start.map(lambda x: int(x ** 2)) == exp
 
     @pytest.mark.parametrize(
         "start, exp", ((Ok("foo"), Ok("foo")), (Err(2), Err("2")))
@@ -252,7 +252,7 @@ class TestResult:
         self, start: Result[str, int], exp: Result[str, str]
     ) -> None:
         """.map_err() will map onto Err() and ignore Ok()."""
-        assert start.map_err(lambda i: str(i)) == exp
+        assert start.map_err(str) == exp
 
     @pytest.mark.parametrize(
         "start, exp", ((Ok(1), Some(1)), (Err(1), Nothing()))
