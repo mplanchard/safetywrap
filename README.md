@@ -1,9 +1,18 @@
 # result-types
+
 [![pipeline status](https://gitlab.com/mplanchard/result-types/badges/master/pipeline.svg)](https://gitlab.com/mplanchard/result-types/commits/master)
 [![Build Status](https://dev.azure.com/msplanchard/result-types/_apis/build/status/mplanchard.result-types?branchName=master)](https://dev.azure.com/msplanchard/result-types/_build/latest?definitionId=2&branchName=master)
 [![coverage report](https://gitlab.com/mplanchard/result-types/badges/master/coverage.svg)](https://gitlab.com/mplanchard/result-types/commits/master)
 
 Fully typesafe, Rust-like result types for Python
+
+This project was developed for and is graciously sponsored by my employer,
+[Bestow, Inc.](https://hellobestow.com/). At Bestow, we aim to democratize life
+insurance by providing simple, easy coverage, purchasable online in five minutes
+with no doctors' visits and no hassles.
+
+We're pretty much always hiring great developers, so if you'd like to work
+with us, please check out [our careers page](https://hellobestow.com/careers/)!
 
 ## Usage
 
@@ -13,7 +22,6 @@ as well as `Ok(t)` and `Err(e)` implementations of the `Result` type, and
 
 For an overview of the Result type in Rust, check out [Recoverable Errors with `Result`](https://doc.rust-lang.org/1.30.0/book/2018-edition/ch09-02-recoverable-errors-with-result.html)
 from the Rust book.
-
 
 ## Contributing
 
