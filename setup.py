@@ -5,6 +5,7 @@ import typing as t
 from os.path import dirname, exists, join, realpath
 from setuptools import setup, find_packages
 
+cwd = dirname(realpath(__file__))
 
 ########################################################################
 # Contact Information
@@ -21,7 +22,11 @@ EMAIL = "msplanchard@gmail.com"
 
 NAME = "result_types"
 SHORT_DESC = "Rust-inspired typesafe result types"
-LONG_DESC = SHORT_DESC
+
+with open(join(cwd, "README.md")) as readme:
+    LONG_DESC = readme.read()
+LONG_DESC_CONTENT_TYPE = "text/markdown"
+
 KEYWORDS = ["python", "rust", "result", "option", "types", "typesafe"]
 CLASSIFIERS = [
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers for all
@@ -108,8 +113,6 @@ if exists(REQ_FILE):
 
 __version__ = "0.0.0"
 
-cwd = dirname(realpath(__file__))
-
 with open(join(cwd, "src/{}/__init__.py".format(NAME))) as init_file:
     for line in init_file:
         # This will set __version__ and __version_info__ variables locally
@@ -117,21 +120,21 @@ with open(join(cwd, "src/{}/__init__.py".format(NAME))) as init_file:
             exec(line)
 
 setup(
-    name=NAME,
-    version=__version__,
-    description=SHORT_DESC,
-    long_description=LONG_DESC,
-    url=URL,
-    author=AUTHOR,
     author_email=EMAIL,
+    author=AUTHOR,
     classifiers=CLASSIFIERS,
+    description=SHORT_DESC,
+    entry_points=ENTRY_POINTS,
+    extras_require=EXTRAS_DEPENDENCIES,
     keywords=KEYWORDS,
+    long_description_content_type=LONG_DESC_CONTENT_TYPE,
+    long_description=LONG_DESC,
+    name=NAME,
     package_data=PACKAGE_DATA,
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    install_requires=PACKAGE_DEPENDENCIES,
     setup_requires=SETUP_DEPENDENCIES,
     tests_require=TEST_DEPENDENCIES,
-    extras_require=EXTRAS_DEPENDENCIES,
-    entry_points=ENTRY_POINTS,
+    url=URL,
+    version=__version__,
 )
