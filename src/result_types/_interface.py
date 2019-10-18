@@ -32,8 +32,11 @@ class _Result(t.Generic[T, E]):
     # specifying a default type. However, type hinting of uses of this
     # method should still work just fine.
     @staticmethod
-    def from_(  # type: ignore
-        fn: t.Callable[[], T], exc_type: t.Type[ExcType] = Exception
+    def of(  # type: ignore
+        fn: t.Callable[..., T],
+        *args: t.Any,
+        catch: t.Type[ExcType] = Exception,
+        **kwargs: t.Any
     ) -> "_Result[T, ExcType]":
         """Call `fn` and wrap its result in an `Ok()`.
 
@@ -41,6 +44,16 @@ class _Result(t.Generic[T, E]):
         default, any `Exception` will be intercepted. If you specify
         `exc_type`, only that exception will be intercepted.
         """
+        raise NotImplementedError
+
+    @staticmethod
+    def err_if(predicate: t.Callable[[T], bool], value: T) -> "_Result[T, T]":
+        """Return Err(val) if predicate(val) is True, otherwise Ok(val)."""
+        raise NotImplementedError
+
+    @staticmethod
+    def ok_if(predicate: t.Callable[[T], bool], value: T) -> "_Result[T, T]":
+        """Return Ok(val) if predicate(val) is True, otherwise Err(val)."""
         raise NotImplementedError
 
     # Same issue here with the default type
@@ -75,6 +88,13 @@ class _Result(t.Generic[T, E]):
         raise NotImplementedError
 
     def and_then(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+        """Call `fn` if Ok, or ignore an error.
+
+        This can be used to chain functions that return results.
+        """
+        raise NotImplementedError
+
+    def flatmap(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
         """Call `fn` if Ok, or ignore an error.
 
         This can be used to chain functions that return results.
@@ -142,12 +162,16 @@ class _Result(t.Generic[T, E]):
         """Return an Ok result, or throw an error if an Err."""
         raise NotImplementedError
 
-    def unwrap_or(self, alternative: T) -> T:
+    def unwrap_or(self, alternative: U) -> t.Union[T, U]:
         """Return the `Ok` value, or `alternative` if `self` is `Err`."""
         raise NotImplementedError
 
-    def unwrap_or_else(self, fn: t.Callable[[E], T]) -> T:
+    def unwrap_or_else(self, fn: t.Callable[[E], U]) -> t.Union[T, U]:
         """Return the `Ok` value, or the return from `fn`."""
+        raise NotImplementedError
+
+    def unsafe_unwrap(self) -> t.Union[T, E]:
+        """Return the value, regardless of whether we are OK or Err."""
         raise NotImplementedError
 
     def __iter__(self) -> t.Iterator[T]:
@@ -196,6 +220,16 @@ class _Option(t.Generic[T]):
         raise NotImplementedError
 
     @staticmethod
+    def nothing_if(predicate: t.Callable[[T], bool], value: T) -> "_Option[T]":
+        """Return Nothing() if predicate(val) is True, else Some(val)."""
+        raise NotImplementedError
+
+    @staticmethod
+    def some_if(predicate: t.Callable[[T], bool], value: T) -> "_Option[T]":
+        """Return Some(val) if predicate(val) is True, else Nothing()."""
+        raise NotImplementedError
+
+    @staticmethod
     def wrap(
         fn: t.Callable[..., t.Optional[T]]
     ) -> t.Callable[..., "_Option[T]"]:
@@ -219,6 +253,10 @@ class _Option(t.Generic[T]):
         raise NotImplementedError
 
     def and_then(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
+        """Return `Nothing`, or call `fn` with the `Some` value."""
+        raise NotImplementedError
+
+    def flatmap(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
         """Return `Nothing`, or call `fn` with the `Some` value."""
         raise NotImplementedError
 
@@ -290,11 +328,11 @@ class _Option(t.Generic[T]):
         """Return `Some` value, or raise an error."""
         raise NotImplementedError
 
-    def unwrap_or(self, default: T) -> T:
+    def unwrap_or(self, default: U) -> t.Union[T, U]:
         """Return the contained value or `default`."""
         raise NotImplementedError
 
-    def unwrap_or_else(self, fn: t.Callable[[], T]) -> T:
+    def unwrap_or_else(self, fn: t.Callable[[], U]) -> t.Union[T, U]:
         """Return the contained value or calculate a default."""
         raise NotImplementedError
 

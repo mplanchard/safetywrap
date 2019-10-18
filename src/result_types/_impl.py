@@ -27,10 +27,15 @@ Kwargs = t.TypeVar("Kwargs")
 class Result(_Result[T, E]):
     """Base implementation for Result types."""
 
+    __slots__ = ()
+
     @staticmethod
-    def from_(  # type: ignore
-        fn: t.Callable[[], T], exc_type: t.Type[ExcType] = Exception
-    ) -> "_Result[T, ExcType]":
+    def of(  # type: ignore
+        fn: t.Callable[..., T],
+        *args: t.Any,
+        catch: t.Type[ExcType] = Exception,
+        **kwargs: t.Any,
+    ) -> "Result[T, ExcType]":
         """Call `fn` and wrap its result in an `Ok()`.
 
         If an exception is intercepted, return `Err(exception)`. By
@@ -38,15 +43,29 @@ class Result(_Result[T, E]):
         `exc_type`, only that exception will be intercepted.
         """
         try:
-            return Ok(fn())
-        except exc_type as exc:
+            return Ok(fn(*args, **kwargs))
+        except catch as exc:
             return Err(exc)
+
+    @staticmethod
+    def err_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
+        """Return Err(val) if predicate(val) is True, otherwise Ok(val)."""
+        if predicate(value):
+            return Err(value)
+        return Ok(value)
+
+    @staticmethod
+    def ok_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
+        """Return Ok(val) if predicate(val) is True, otherwise Err(val)."""
+        if predicate(value):
+            return Ok(value)
+        return Err(value)
 
     @staticmethod
     def wrap(  # type: ignore
         fn: t.Callable[..., T],
         intercept: t.Iterable[t.Type[ExcType]] = (Exception,),
-    ) -> t.Callable[..., "_Result[T, ExcType]"]:
+    ) -> t.Callable[..., "Result[T, ExcType]"]:
         """Intercept excpetions and automatically return a Result.
 
         If the function
@@ -67,7 +86,7 @@ class Result(_Result[T, E]):
     def wrap_for(
         exceptions: t.Iterable[t.Type[ExcType]],
     ) -> t.Callable[
-        [t.Callable[..., T]], t.Callable[..., "_Result[T, ExcType]"]
+        [t.Callable[..., T]], t.Callable[..., "Result[T, ExcType]"]
     ]:
         """Create a wrapper/decorator to intercept the given exceptions."""
         return partial(Result.wrap, intercept=exceptions)
@@ -75,6 +94,8 @@ class Result(_Result[T, E]):
 
 class Option(_Option[T]):
     """Base implementation for Option types."""
+
+    __slots__ = ()
 
     @staticmethod
     def of(value: t.Optional[T]) -> "Option[T]":
@@ -86,6 +107,20 @@ class Option(_Option[T]):
         if value is None:
             return Nothing()
         return Some(value)
+
+    @staticmethod
+    def nothing_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
+        """Return Nothing() if predicate(val) is True, else Some(val)."""
+        if predicate(value):
+            return Nothing()
+        return Some(value)
+
+    @staticmethod
+    def some_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
+        """Return Some(val) if predicate(val) is True, else Nothing()."""
+        if predicate(value):
+            return Some(value)
+        return Nothing()
 
     @staticmethod
     def wrap(
@@ -127,6 +162,13 @@ class Ok(Result[T, E], Immutable):
         This can be used to chain functions that return results.
         """
         return fn(self._value)
+
+    def flatmap(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+        """Call `fn` if Ok, or ignore an error.
+
+        This can be used to chain functions that return results.
+        """
+        return self.and_then(fn)
 
     def or_else(self, fn: t.Callable[[E], "_Result[T, F]"]) -> "_Result[T, F]":
         """Return `self` if `Ok`, or call `fn` with `self` if `Err`."""
@@ -189,12 +231,16 @@ class Ok(Result[T, E], Immutable):
         """Return an Ok result, or throw an error if an Err."""
         raise RuntimeError(f"Tried to unwrap_err {self}!")
 
-    def unwrap_or(self, alternative: T) -> T:
+    def unwrap_or(self, alternative: U) -> t.Union[T, U]:
         """Return the `Ok` value, or `alternative` if `self` is `Err`."""
         return self._value
 
-    def unwrap_or_else(self, fn: t.Callable[[E], T]) -> T:
+    def unwrap_or_else(self, fn: t.Callable[[E], U]) -> t.Union[T, U]:
         """Return the `Ok` value, or the return from `fn`."""
+        return self._value
+
+    def unsafe_unwrap(self) -> t.Union[T, E]:
+        """Return the value, regardless of whether we are OK or Err."""
         return self._value
 
     def __iter__(self) -> t.Iterator[T]:
@@ -250,6 +296,13 @@ class Err(Result[T, E], Immutable):
         This can be used to chain functions that return results.
         """
         return t.cast(Result[U, E], self)
+
+    def flatmap(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+        """Call `fn` if Ok, or ignore an error.
+
+        This can be used to chain functions that return results.
+        """
+        return self.and_then(fn)
 
     def or_else(self, fn: t.Callable[[E], "_Result[T, F]"]) -> "_Result[T, F]":
         """Return `self` if `Ok`, or call `fn` with `self` if `Err`."""
@@ -312,13 +365,17 @@ class Err(Result[T, E], Immutable):
         """Return an Ok result, or throw an error if an Err."""
         return self._value
 
-    def unwrap_or(self, alternative: T) -> T:
+    def unwrap_or(self, alternative: U) -> t.Union[T, U]:
         """Return the `Ok` value, or `alternative` if `self` is `Err`."""
         return alternative
 
-    def unwrap_or_else(self, fn: t.Callable[[E], T]) -> T:
+    def unwrap_or_else(self, fn: t.Callable[[E], U]) -> t.Union[T, U]:
         """Return the `Ok` value, or the return from `fn`."""
         return fn(self._value)
+
+    def unsafe_unwrap(self) -> t.Union[T, E]:
+        """Return the value, regardless of whether we are OK or Err."""
+        return self._value
 
     def __iter__(self) -> t.Iterator[T]:
         """Return a one-item iterator whose sole member is the result if `Ok`.
@@ -377,6 +434,10 @@ class Some(Option[T], Immutable):
     def and_then(self, fn: t.Callable[[T], _Option[U]]) -> _Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
         return fn(self._value)
+
+    def flatmap(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
+        """Return `Nothing`, or call `fn` with the `Some` value."""
+        return self.and_then(fn)
 
     def or_else(self, fn: t.Callable[[], _Option[T]]) -> _Option[T]:
         """Return option if it is `Some`, or calculate an alternative."""
@@ -450,11 +511,11 @@ class Some(Option[T], Immutable):
         """Return `Some` value, or raise an error."""
         return self._value
 
-    def unwrap_or(self, default: T) -> T:
+    def unwrap_or(self, default: U) -> t.Union[T, U]:
         """Return the contained value or `default`."""
         return self._value
 
-    def unwrap_or_else(self, fn: t.Callable[[], T]) -> T:
+    def unwrap_or_else(self, fn: t.Callable[[], U]) -> t.Union[T, U]:
         """Return the contained value or calculate a default."""
         return self._value
 
@@ -523,6 +584,10 @@ class Nothing(Option[T], Immutable):
     def and_then(self, fn: t.Callable[[T], _Option[U]]) -> _Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
         return t.cast(_Option[U], self)
+
+    def flatmap(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
+        """Return `Nothing`, or call `fn` with the `Some` value."""
+        return self.and_then(fn)
 
     def or_else(self, fn: t.Callable[[], _Option[T]]) -> _Option[T]:
         """Return option if it is `Some`, or calculate an alternative."""
@@ -594,11 +659,11 @@ class Nothing(Option[T], Immutable):
         """Return `Some` value, or raise an error."""
         raise RuntimeError("Tried to unwrap Nothing")
 
-    def unwrap_or(self, default: T) -> T:
+    def unwrap_or(self, default: U) -> t.Union[T, U]:
         """Return the contained value or `default`."""
         return default
 
-    def unwrap_or_else(self, fn: t.Callable[[], T]) -> T:
+    def unwrap_or_else(self, fn: t.Callable[[], U]) -> t.Union[T, U]:
         """Return the contained value or calculate a default."""
         return fn()
 

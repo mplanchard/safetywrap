@@ -29,15 +29,57 @@ class TestResultConstructors:
         (
             (lambda: 5, Ok(5)),
             (lambda: _raises(TypeError), Err(TypeError)),
-            (lambda: Nothing(), Ok(Nothing())),
+            (Nothing, Ok(Nothing())),
         ),
     )
-    def test_from_(self, fn: t.Callable, exp: Result) -> None:
+    def test_of(self, fn: t.Callable, exp: Result) -> None:
         """Test getting a result from a callable."""
         if exp.is_err():
-            assert isinstance(Result.from_(fn).unwrap_err(), exp.unwrap_err())
+            assert isinstance(Result.of(fn).unwrap_err(), exp.unwrap_err())
         else:
-            assert Result.from_(fn) == exp
+            assert Result.of(fn) == exp
+
+    def test_of_with_args(self) -> None:
+        """Test getting a result from a callable with args."""
+        assert Result.of(lambda x: bool(x > 0), 1).unwrap() is True
+
+    def test_of_with_kwargs(self) -> None:
+        """Test getting a result from a callable with args."""
+
+        def foo(a: int, b: str = None) -> t.Optional[str]:
+            return b
+
+        assert Result.of(foo, 1, b="a").unwrap() == "a"
+
+    @pytest.mark.parametrize(
+        "predicate, val, exp",
+        (
+            (lambda x: x is True, True, Ok(True)),
+            (lambda x: x is True, False, Err(False)),
+            (lambda x: x > 0, 1, Ok(1)),
+            (lambda x: x > 0, -2, Err(-2)),
+        ),
+    )
+    def test_ok_if(
+        self, predicate: t.Callable, val: t.Any, exp: Result
+    ) -> None:
+        """Test constructing based on some predicate."""
+        assert Result.ok_if(predicate, val) == exp
+
+    @pytest.mark.parametrize(
+        "predicate, val, exp",
+        (
+            (lambda x: x is True, True, Err(True)),
+            (lambda x: x is True, False, Ok(False)),
+            (lambda x: x > 0, 1, Err(1)),
+            (lambda x: x > 0, -2, Ok(-2)),
+        ),
+    )
+    def test_err_if(
+        self, predicate: t.Callable, val: t.Any, exp: Result
+    ) -> None:
+        """Test constructing based on some predicate."""
+        assert Result.err_if(predicate, val) == exp
 
     @pytest.mark.parametrize(
         "fn, exp",
@@ -49,7 +91,7 @@ class TestResultConstructors:
     )
     def test_wrap(self, fn: t.Callable, exp: Result) -> None:
         """A wrapped function returns Ok() on success or Err() on exception."""
-        wrapped = Result.wrap(fn)  # type: ignore
+        wrapped: t.Callable = Result.wrap(fn)
         res = wrapped()
 
         if exp.is_err():
@@ -90,7 +132,7 @@ class TestResultConstructors:
         self, fn: t.Callable, excs: t.Tuple[t.Type[Exception], ...], exp: Result
     ) -> None:
         """Wrap_for allows intercepting only specific decorators."""
-        wrapped = Result.wrap_for(excs)(fn)  # type: ignore
+        wrapped: t.Callable = Result.wrap_for(excs)(fn)
 
         @Result.wrap_for(excs)
         def _decorated() -> t.Any:

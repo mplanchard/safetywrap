@@ -36,6 +36,36 @@ class TestOptionConstructors:
         assert Option.of(val) == exp
 
     @pytest.mark.parametrize(
+        "predicate, val, exp",
+        (
+            (lambda x: x is True, True, Some(True)),
+            (lambda x: x is True, False, Nothing()),
+            (lambda x: x > 0, 1, Some(1)),
+            (lambda x: x > 0, -2, Nothing()),
+        ),
+    )
+    def test_ok_if(
+        self, predicate: t.Callable, val: t.Any, exp: Option
+    ) -> None:
+        """Test constructing based on some predicate."""
+        assert Option.some_if(predicate, val) == exp
+
+    @pytest.mark.parametrize(
+        "predicate, val, exp",
+        (
+            (lambda x: x is True, True, Nothing()),
+            (lambda x: x is True, False, Some(False)),
+            (lambda x: x > 0, 1, Nothing()),
+            (lambda x: x > 0, -2, Some(-2)),
+        ),
+    )
+    def test_err_if(
+        self, predicate: t.Callable, val: t.Any, exp: Option
+    ) -> None:
+        """Test constructing based on some predicate."""
+        assert Option.nothing_if(predicate, val) == exp
+
+    @pytest.mark.parametrize(
         "fn, exp",
         (
             (lambda: None, Nothing()),
