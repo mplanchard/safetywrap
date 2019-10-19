@@ -29,10 +29,10 @@ class Result(_Result[T, E]):
     __slots__ = ()
 
     @staticmethod
-    def of(  # type: ignore
+    def of(
         fn: t.Callable[..., T],
         *args: t.Any,
-        catch: t.Type[ExcType] = Exception,
+        catch: t.Type[ExcType] = Exception,  # type: ignore
         **kwargs: t.Any,
     ) -> "Result[T, ExcType]":
         """Call `fn` and wrap its result in an `Ok()`.

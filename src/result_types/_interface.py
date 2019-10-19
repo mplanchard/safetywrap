@@ -32,10 +32,10 @@ class _Result(t.Generic[T, E]):
     # specifying a default type. However, type hinting of uses of this
     # method should still work just fine.
     @staticmethod
-    def of(  # type: ignore
+    def of(
         fn: t.Callable[..., T],
         *args: t.Any,
-        catch: t.Type[ExcType] = Exception,
+        catch: t.Type[ExcType] = Exception,  # type: ignore
         **kwargs: t.Any
     ) -> "_Result[T, ExcType]":
         """Call `fn` and wrap its result in an `Ok()`.
