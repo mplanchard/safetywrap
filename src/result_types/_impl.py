@@ -3,7 +3,6 @@
 import typing as t
 
 from ._interface import _Option, _Result
-from ._mixin import Immutable
 
 
 T = t.TypeVar("T")
@@ -95,7 +94,7 @@ class Option(_Option[T]):
 # pylint: enable=abstract-method
 
 
-class Ok(Result[T, E], Immutable):
+class Ok(Result[T, E]):
     """Standard wrapper for results."""
 
     __slots__ = ("_value",)
@@ -103,7 +102,6 @@ class Ok(Result[T, E], Immutable):
     def __init__(self, result: T) -> None:
         """Wrap a result."""
         self._value: T = result
-        Immutable.__init__(self)
 
     def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
         """Return `res` if the result is `Ok`, otherwise return `self`."""
@@ -196,10 +194,6 @@ class Ok(Result[T, E], Immutable):
         """Return the `Ok` value, or the return from `fn`."""
         return self._value
 
-    def unsafe_unwrap(self) -> t.Union[T, E]:
-        """Return the value, regardless of whether we are OK or Err."""
-        return self._value
-
     def __iter__(self) -> t.Iterator[T]:
         """Return a one-item iterator whose sole member is the result if `Ok`.
 
@@ -229,7 +223,7 @@ class Ok(Result[T, E], Immutable):
         return self.__str__()
 
 
-class Err(Result[T, E], Immutable):
+class Err(Result[T, E]):
     """Standard wrapper for results."""
 
     __slots__ = ("_value",)
@@ -237,7 +231,6 @@ class Err(Result[T, E], Immutable):
     def __init__(self, result: E) -> None:
         """Wrap a result."""
         self._value = result
-        Immutable.__init__(self)
 
     def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
         """Return `res` if the result is `Ok`, otherwise return `self`."""
@@ -330,10 +323,6 @@ class Err(Result[T, E], Immutable):
         """Return the `Ok` value, or the return from `fn`."""
         return fn(self._value)
 
-    def unsafe_unwrap(self) -> t.Union[T, E]:
-        """Return the value, regardless of whether we are OK or Err."""
-        return self._value
-
     def __iter__(self) -> t.Iterator[T]:
         """Return a one-item iterator whose sole member is the result if `Ok`.
 
@@ -364,15 +353,15 @@ class Err(Result[T, E], Immutable):
         return self.__str__()
 
 
-class Some(Option[T], Immutable):
+class Some(Option[T]):
     """A value that may be `Some` or `Nothing`."""
 
     __slots__ = ("_value",)
 
     def __init__(self, value: T) -> None:
         """Wrap value in a `Some()`."""
-        self._value = value
-        Immutable.__init__(self)
+        # not sure why pylint things _value is not in __slots__
+        self._value = value  # pylint: disable=assigning-non-slot
 
     def and_(self, alternative: _Option[U]) -> _Option[U]:
         """Return `Nothing` if `self` is `Nothing`, or the `alternative`."""
@@ -500,7 +489,7 @@ class Some(Option[T], Immutable):
         return self.__str__()
 
 
-class Nothing(Option[T], Immutable):
+class Nothing(Option[T]):
     """A value that may be `Some` or `Nothing`."""
 
     __slots__ = ("_value",)
@@ -511,8 +500,8 @@ class Nothing(Option[T], Immutable):
         """Create a Nothing()."""
         if self._instance is None:
             # The singleton is being instantiated the first time
-            self._value = None
-            Immutable.__init__(self)
+            # not sure why pylint things _value is not in __slots__
+            self._value = None  # pylint: disable=assigning-non-slot
 
     def __new__(cls, _: None = None) -> "Nothing[T]":
         """Ensure we are a singleton."""

@@ -131,26 +131,6 @@ class TestImplementationDetails:
         """Ensure Nothing() is a singleton."""
         assert Nothing() is Nothing() is Nothing()
 
-    def test_ok_immutable(self) -> None:
-        """Results may not be mutated."""
-        with pytest.raises(TypeError):
-            Ok("a")._value = "some other value"
-
-    def test_err_immutable(self) -> None:
-        """Results may not be mutated."""
-        with pytest.raises(TypeError):
-            Err("a")._value = "some other value"
-
-    def test_some_immutable(self) -> None:
-        """Options may not be mutated."""
-        with pytest.raises(TypeError):
-            Some("a")._value = "some other value"
-
-    def test_nothing_immutable(self) -> None:
-        """Options may not be mutated."""
-        with pytest.raises(TypeError):
-            Nothing()._value = None
-
     @pytest.mark.parametrize("obj", (Some(1), Nothing(), Ok(1), Err(1)))
     def test_all_slotted(self, obj: t.Any) -> None:
         """All implementations use __slots__."""

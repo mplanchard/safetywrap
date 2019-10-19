@@ -61,22 +61,22 @@ class _Result(t.Generic[T, E]):
     # ------------------------------------------------------------------
 
     def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
-        """Return `res` if the result is `Ok`, otherwise return `self`."""
+        """Return `res` if self is `Ok`, otherwise return `self`."""
         raise NotImplementedError
 
     def or_(self, res: "_Result[T, F]") -> "_Result[T, F]":
-        """Return `res` if the result is `Err`, otherwise `self`."""
+        """Return `res` if self is `Err`, otherwise `self`."""
         raise NotImplementedError
 
     def and_then(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
-        """Call `fn` if Ok, or ignore an error.
+        """Call `fn` if Ok, or ignore an error. Alias of `flatmap`.
 
         This can be used to chain functions that return results.
         """
         raise NotImplementedError
 
     def flatmap(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
-        """Call `fn` if Ok, or ignore an error.
+        """Call `fn` if Ok, or ignore an error. Alias of `and_then`
 
         This can be used to chain functions that return results.
         """
@@ -149,10 +149,6 @@ class _Result(t.Generic[T, E]):
 
     def unwrap_or_else(self, fn: t.Callable[[E], U]) -> t.Union[T, U]:
         """Return the `Ok` value, or the return from `fn`."""
-        raise NotImplementedError
-
-    def unsafe_unwrap(self) -> t.Union[T, E]:
-        """Return the value, regardless of whether we are OK or Err."""
         raise NotImplementedError
 
     def __iter__(self) -> t.Iterator[T]:
