@@ -150,3 +150,8 @@ class TestImplementationDetails:
         """Options may not be mutated."""
         with pytest.raises(TypeError):
             Nothing()._value = None
+
+    @pytest.mark.parametrize("obj", (Some(1), Nothing(), Ok(1), Err(1)))
+    def test_all_slotted(self, obj: t.Any) -> None:
+        """All implementations use __slots__."""
+        assert not hasattr(obj, "__dict__")
