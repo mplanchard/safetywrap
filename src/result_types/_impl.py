@@ -1,7 +1,6 @@
 """Implementations of Ok, Err, Some, and None."""
 
 import typing as t
-from functools import partial, wraps
 
 from ._interface import _Option, _Result
 from ._mixin import Immutable
