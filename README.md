@@ -39,12 +39,12 @@ are provided, so that you can decorate function inputs and outputs as
 returning `Result` and `Option` types and get useful feedback when supplying
 arguments or passing return values.
 
-### Examples
+## Examples
 
 In general, these examples build from simple to complex. See [Usage](#usage)
 below for the full API specification.
 
-#### Get an enum member by its value, returning the member or None
+### Get an enum member by its value, returning the member or None
 
 ```py
 import typing as t
@@ -63,7 +63,7 @@ def enum_member_for_val(enum: t.Type[T], value: t.Any) -> Option[T]:
     return Result.of(enum, value).unwrap_or(None)
 ```
 
-#### Get an enum member by its value, returning an Option
+### Get an enum member by its value, returning an Option
 
 ```py
 import typing as t
@@ -81,7 +81,7 @@ def enum_member_for_val(enum: t.Type[T], value: t.Any) -> Option[T]:
     return Result.of(enum, value).ok()
 ```
 
-#### Serialize a dict that may be missing keys, using default values
+### Serialize a dict that may be missing keys, using default values
 
 ```py
 import json
@@ -106,7 +106,7 @@ def serialize(data: t.Dict[str, t.Union[int, str, float]]) -> str:
     ).unwrap_or("Could not serialize JSON from data!")
 ```
 
-#### Make an HTTP request, and if the status code is 200, convert the body to JSON and return the `data` key. If there is an error or the `data` key does not exist, return an error string
+### Make an HTTP request, and if the status code is 200, convert the body to JSON and return the `data` key. If there is an error or the `data` key does not exist, return an error string
 
 ```py
 from functools import partial
@@ -144,18 +144,501 @@ def get_data(url: str) -> str:
         .map(lambda js: Option.of(js.get("data")).map(str))
         # And to a `Result[str, str]`
         .and_then(lambda data: data.ok_or("No data key in JSON!"))
+        # If we are an error, convert us to an Ok with the error string
+        .or_else(Ok)
         # And now we get either the Ok string or the Err string!
-        .unsafe_unwrap()
+        .unwrap()
     )
 ```
 
 ## Usage
 
+### Result[T,E]
+
+#### Result Constructors
+
+##### Ok
+
+`Ok(value: T) -> Result[T, E]`
+
+Construct an `Ok` Result directly with the value.
+
+Example:
+
+```py
+def check_value_not_negative(val: int) -> Result[int, str]:
+    """Check that a value is not negative, or return an Err."""
+    if val >= 0:
+        return Ok(val)
+    return Err(f"{val} is negative!")
+```
+
+##### Err
+
+`Err(value: E) -> Result[T, E]`
+
+Construct an `Err` Result directly with the value.
+
+Example:
+
+```py
+def check_value_not_negative(val: int) -> Result[int, str]:
+    """Check that a value is not negative, or return an Err."""
+    if val >= 0:
+        return Ok(val)
+    return Err(f"{val} is negative!")
+```
+
+##### Result.of
+
+`Result.of(fn: Callable[..., T], *args: t.Any, catch: t.Type[E], **kwargs) -> Result[T, E]`
+
+Call a function with the provided arguments. If no error is thrown, return
+`Ok(result)`. Otherwise, return `Err(exception)`. By default, `Exception`
+is caught, but different error types may be provided with the `catch`
+keyword argument.
+
+The type of `E` MUST be `Exception` or one of its subclasses.
+
+This constructor is designed to be useful in wrapping other APIs, builtin
+functions, etc.
+
+Example:
+
+```py
+import json
+
+def parse_json(string: str) -> Result[dict, Exception]:
+    """Parse a JSON object into a dict."""
+    return Result.of(json.loads, string)
+```
+
+##### Result.err_if
+
+`Result.err_if(predicate: t.Callable[[T], bool], value: T) -> Result[T, T]`
+
+Run a predicate on some value, and return `Err(val)` if the predicate returns
+True, or `Ok(val)` if the predicate returns False.
+
+Example:
+
+```py
+from requests import Response
+
+def checked_response(response: Response) -> Result[Response, Response]:
+    """Try to get a response from the server."""
+    return Result.err_if(lambda r: r.status_code >= 300, response)
+```
+
+##### Result.ok_if
+
+`Result.ok_if(predicate: t.Callable[[T], bool], value: T) -> Result[T, T]`
+
+Run a predicate on some value, and return `Ok(val)` if the predicate returns
+True, or `Err(val)` if the predicate returns False.
+
+Example:
+
+```py
+def checked_data(data: dict) -> Result[dict, dict]:
+    """Check if data has expected keys."""
+    expected_keys = ("one", "two", "three")
+    return Result.ok_if(lambda d: all(k in d for k in expected_keys), data)
+```
+
+#### Result Methods
+
+##### Result.and_
+
+`Result.and_(self, res: Result[U, E]) -> Result[U, E]`
+
+If this Result is `Ok`, return `res`. If this result is `Err`, return this
+Result. This can be used to short circuit a chain of Results on encountering
+the first error.
+
+Example:
+
+```py
+assert Ok(5).and_(Ok(6)) == Ok(6)
+assert Err(1).and_(Ok(6)) == Err(1)
+assert Err(1).and_(Err(2)).and_(Ok(5)) == Err(1)
+assert Ok(5).and_(Err(1)).and_(Ok(6)) == Err(1)
+```
+
+##### Result.or_
+
+`Result.or_(self, res: Result[T, F]) -> Result[T, F]`
+
+If this Result is `Err`, return `res`. Otherwise, return this Result.
+
+Example:
+
+```py
+assert Err(1).or_(Ok(5)) == Ok(5)
+assert Err(1).or_(Err(2)) == Err(2)
+assert Ok(5).or_(Ok(6)) == Ok(5)
+assert Ok(5).or_(Err(1)) == Ok(5)
+```
+
+##### Result.and_then
+
+`Result.and_then(self, fn: t.Callable[[T], Result[U, E]]) -> Result[U, E]`
+
+If this Result is `Ok`, call the provided function with the wrapped value of
+this Result and return the Result of that function. This allows easily
+chaining multiple Result-generating calls together to yield a final
+Result. This method is an alias of [`flatmap`](#result.flatmap)
+
+Example:
+
+```py
+assert Ok(5).and_then(lambda val: Ok(val + 1)) == Ok(6)
+assert Err(1).and_then(lambda val: Ok(val + 1)) == Err(1)
+```
+
+##### Result.flatmap
+
+`Result.flatmap(self, fn: t.Callable[[T], Result[U, E]]) -> Result[U, E]`
+
+If this Result is `Ok`, call the provided function with the wrapped value of
+this Result and return the Result of that function. This allows easily
+chaining multiple Result-generating calls together to yield a final
+Result. This method is an alias of [`and_then`](#result.and_then)
+
+Example:
+
+```py
+assert Ok(5).flatmap(lambda val: Ok(val + 1)) == Ok(6)
+assert Err(1).flatmap(lambda val: Ok(val + 1)) == Err(1)
+```
+
+##### Result.or_else
+
+`Result.or_else(self, fn: t.Callable[[E], Result[T, F]]) -> Result[T, F])`
+
+If this result is `Err`, call the provided function with the wrapped error
+value of this Result and return the Result of that function. This allows
+easily handling potential errors in a way that still returns a final Result.
+
+Example:
+
+```py
+assert Ok(5).or_else(Ok) == Ok(5)
+assert Err(1).or_else(Ok) == Ok(1)
+```
+
+##### Result.err
+
+`Result.err(self) -> Option[E]`
+
+Convert this Result into an Option, returning Some(err_val) if this Result
+is `Err`, or Nothing() if this Result is `Ok`.
+
+Example:
+
+```py
+assert Ok(5).err() == Nothing()
+assert Err(1).err() == Some(1)
+```
+
+##### Result.ok
+
+`Result.ok(self) -> Option[T]`
+
+Convert this Result into an Option, returning `Some(val)` if this Result is
+`Ok`, or `Nothing()` if this result is `Err`.
+
+Example:
+
+```py
+assert Ok(5).ok() == Some(5)
+assert Err(1).ok() == Nothing()
+```
+
+##### Result.expect
+
+`Result.expect(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
+
+Return the wrapped value if this Result is `Ok`. Otherwise, raise an error,
+instantiated with the provided message. By default, a `RuntimeError` is raised,
+but an alternative error may be provided using the `exc_cls` keyword argument.
+
+Example:
+
+```py
+import pytest
+
+with pytest.raises(RuntimeError) as exc:
+    Err(5).expect("5 is right out!")
+    assert str(exc.value) == "5 is right out!"
+
+assert Ok(1).expect("5 is right out") == 1
+```
+
+##### Result.expect_err
+
+`Result.expect_err(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> E`
+
+Return the wrapped value if this Result is `Err`. Otherwise, raise an error,
+instantiated with the provided message. By default, a `RuntimeError` is raised,
+but an alternative error may be provided using the `exc_cls` keyword argument.
+
+Example:
+
+```py
+import pytest
+
+with pytest.raises(RuntimeError) as exc:
+    Ok(5).expect_err("5 is right out!")
+    assert str(exc.value) == "5 is right out!"
+
+assert Err(1).expect_err("5 is right out") == 1
+```
+
+##### Result.is_err
+
+`Result.is_err(self) -> bool`
+
+Return True if this Result is `Err`, or `False` if this Result is `Ok`.
+
+Example:
+
+```py
+assert Err(1).is_err() is True
+assert Ok(1).is_err() is False
+```
+
+##### Result.is_ok
+
+`Result.is_ok(self) -> bool`
+
+Return True if this Result is `Ok`, or `False` if this Result is `Err`.
+
+Example:
+
+```py
+assert Ok(1).is_err() is True
+assert Err(1).is_err() is False
+```
+
+##### Result.iter
+
+`Result.iter(self) -> Iterator[T]`
+
+Return an iterator with length 1 over the wrapped value if this Result is `Ok`.
+Otherwise, return a 0-length iterator.
+
+Example:
+
+```py
+assert tuple(Ok(1).iter()) == (1,)
+assert tuple(Err(1).iter()) == ()
+```
+
+##### Result.map
+
+`Result.map(self, fn: t.Callable[[T], U]) -> Result[U, E]`
+
+If this Result is `Ok`, apply the provided function to the wrapped value,
+and return a new `Ok` Result with the result of the function. If this Result
+is `Err`, do not apply the function and return this Result unchanged.
+
+**Warning:** no error checking is performed while applying the provided
+function, and exceptions applying the function are not caught. If you need
+to map with error handling, consider using `and_then` (aka `flatmap`) in
+conjunction with the `Result.of` constructor, e.g.
+`assert Ok(0).and_then(partial(Result.of, lambda i: 10 / i)) == Err(ZeroDivisionError('division by zero'))`
+
+Example:
+
+```py
+assert Ok(1).map(str) == Ok("1")
+assert Err(1).map(str) == Err(1)
+```
+
+##### Result.map_err
+
+`Result.map_err(self, fn: t.Callable[[E], F]) -> Result[T, F]`
+
+If this Result is `Err`, apply the provided function to the wrapped value,
+and return a new `Err` Result with the result of the function. If this Result
+is `Ok`, do not apply the function and return this Result unchanged.
+
+**Warning:** no error checking is performed while applying the provided
+function, and exceptions applying the function are not caught.
+
+Example:
+
+```py
+assert Err(1).map_err(lambda i: i + 1) == Err(2)
+assert Ok(1).map_err(lambda i: i + 1) == Ok(1)
+```
+
+##### Result.unwrap
+
+`Result.unwrap(self) -> T`
+
+If this Result is `Ok`, return the wrapped value. If this Result is `Err`,
+throw a `RuntimeError`.
+
+Example:
+
+```py
+import pytest
+
+assert Ok(1).unwrap() == 1
+
+with pytest.raises(RuntimeError):
+    Err(1).unwrap()
+```
+
+##### Result.unwrap_err
+
+`Result.unwrap_err(self) -> E`
+
+If this Result is `Err`, return the wrapped value. If this Result is `Ok`,
+throw a `RuntimeError`.
+
+Example:
+
+```py
+import pytest
+
+assert Err(1).unwrap() == 1
+
+with pytest.raises(RuntimeError):
+    Ok(1).unwrap()
+```
+
+##### Result.unwrap_or
+
+`Result.unwrap_or(self, alternative: U) -> t.Union[T, U]`
+
+If this Result is `Ok`, return the wrapped value. Otherwise, if this Result
+is `Err`, return the provided alternative.
+
+Example:
+
+```py
+assert Ok(1).unwrap_or(5) == 1
+assert Err(1).unwrap_or(5) == 5
+```
+
+##### Result.unwrap_or_else
+
+`Result.unwrap_or_else(self, fn: t.Callable[[E], U]) -> t.Union[T, U]`
+
+If this Result is `Ok`, return the wrapped value. Otherwise, if this Result
+is `Err`, call the supplied function with the wrapped error value and return
+the result.
+
+Example:
+
+```py
+assert Ok(1).unwrap_or_else(str) == 1
+assert Err(1).unwrap_or_else(str) == "1"
+```
+
+#### Result Magic Methods
+
+##### Result.__iter__
+
+`Result.__iter__(self) -> t.Iterator[T]`
+
+Implement the iterator protocol, allowing iteration over the results of
+[`Result.iter`](#result.iter). If this Result is `Ok`, return an iterator
+of length 1 containing the wrapped value. Otherwise, if this Result is `Err`,
+return a 0-length iterator.
+
+Example:
+
+```py
+# Can be passed to methods that take iterators
+assert tuple(Ok(1)) == (1,)
+assert tuple(Err(1)) == ()
+
+# Can be used in `for in` constructs, including comprehensions
+assert [val for val in Ok(5)] == [5]
+assert [val for val in Err(5)] == []
+
+
+# More for-in usage.
+for val in Ok(5):
+    pass
+assert val == 5
+
+val = None
+for val in Err(1):
+    pass
+assert val is None
+```
+
+##### Result.__eq__
+
+`Result.__eq__(self, other: Any) -> bool`
+
+Enable equality checking using `==`.
+
+Compare the Result with `other`. Return True if `other` is the same type of
+Result with the same wrapped value. Otherwise, return False.
+
+Example:
+
+```py
+assert (Ok(5) == Ok(5)) is True
+assert (Ok(5) == Ok(6)) is False
+assert (Ok(5) == Err(5)) is False
+assert (Ok(5) == 5) is False
+```
+
+##### Result.__ne__
+
+`Result.__ne__(self, other: Any) -> bool`
+
+Enable inequality checking using `!=`.
+
+Compare the Result with `other`. Return False if `other` is the same type of
+Result with the same wrapped value. Otherwise, return True.
+
+Example:
+
+```py
+assert (Ok(5) != Ok(5)) is False
+assert (Ok(5) != Ok(6)) is True
+assert (Ok(5) != Err(5)) is True
+assert (Ok(5) != 5) is True
+```
+
+##### Result.__str__
+
+`Result.__str__(self) -> str`
+
+Enable useful stringification via `str()`.
+
+Example:
+
+```py
+assert str(Ok(5)) == "Ok(5)"
+assert str(Err(5)) == "Err(5)"
+```
+
+##### Result.__repr__
+
+`Result.__repr__(self) -> str`
+
+Enable useful stringification via `repr()`.
+
+Example:
+
+```py
+assert repr(Ok(5)) == "Ok(5)"
+assert repr(Err(5)) == "Err(5)"
+```
+
 ## Performance
 
-Benchmarking utilities are provided in [`bench`](/bench).
-
-Benchmarks may be run with `make bench`
+Benchmarks may be run with `make bench`. Benchmarking utilities are provided
+in [`bench`](/bench).
 
 Currently, the [`sample.py`](/bench/sample.py) benchmark defines two data
 stores, one using classical python error handling (or lack thereof), and
@@ -220,13 +703,18 @@ Once you've forked and cloned the repo, you can run:
 * `make test` - run tests using your local interpreter
 * `make fmt` - format code using [black](https://github.com/python/black)
 * `make lint` - check code with a variety of analysis tools
+* `make bench` - run benchmarks
+
+See the [`Makefile`](Makefile) for other commands.
 
 The CI system requires that `make lint` and `make test` run successfully
 (exit status of 0) in order to merge code.
 
 `result_types` is compatible with Python >= 3.6. You can run against
 all supported python versions with `make test-all-versions`. This requires
-that `docker` be installed on your local system.
+that `docker` be installed on your local system. Alternatively, if you
+have all required Python versions installed, you may run `make tox` to
+run against your local interpreters.
 
 [hyperfine]: https://github.com/sharkdp/hyperfine
 [rust-result]: https://doc.rust-lang.org/std/result/
