@@ -153,7 +153,7 @@ def get_data(url: str) -> str:
 
 ## Usage
 
-### Result[T,E]
+### Result[T, E]
 
 #### Result Constructors
 
@@ -287,7 +287,7 @@ assert Ok(5).or_(Err(1)) == Ok(5)
 If this Result is `Ok`, call the provided function with the wrapped value of
 this Result and return the Result of that function. This allows easily
 chaining multiple Result-generating calls together to yield a final
-Result. This method is an alias of [`flatmap`](#result.flatmap)
+Result. This method is an alias of [`flatmap`](#resultflatmap)
 
 Example:
 
@@ -546,7 +546,7 @@ assert Err(1).unwrap_or_else(str) == "1"
 `Result.__iter__(self) -> t.Iterator[T]`
 
 Implement the iterator protocol, allowing iteration over the results of
-[`Result.iter`](#result.iter). If this Result is `Ok`, return an iterator
+[`Result.iter`](#resultiter). If this Result is `Ok`, return an iterator
 of length 1 containing the wrapped value. Otherwise, if this Result is `Err`,
 return a 0-length iterator.
 
