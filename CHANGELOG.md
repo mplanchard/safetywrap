@@ -14,10 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Result and Option generic type interfaces
 - Ok and Err Result implementations
 - Some and Nothing Option implementations
-- CI pipeline with GitLab
+- CI pipeline with Azure pipelines
 - Full public interface testing
 - Makefile for common operations, including venv setup, linting, formatting,
   and testing
+- Basic benchmarks for analyzing performance
 - Apache license
 
 [Unreleased]: https://github.com/mplanchard/result-types/compare/v1.0.0...HEAD
