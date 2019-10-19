@@ -155,6 +155,9 @@ def get_data(url: str) -> str:
 
 ### Result[T, E]
 
+A Result represents some value that may either be in an `Ok` state or
+an `Err` state.
+
 #### Result Constructors
 
 ##### Ok
@@ -634,6 +637,271 @@ Example:
 assert repr(Ok(5)) == "Ok(5)"
 assert repr(Err(5)) == "Err(5)"
 ```
+
+### Option[T]
+
+An Option represents either `Some` value or `Nothing`.
+
+#### Option Constructors
+
+##### Some
+
+`Some(value: T) -> Option[T]`
+
+Construct a `Some` Option directly with a value.
+
+Example:
+
+```py
+def file_contents(path: str) -> Option[str]:
+    """Return the file contents or Nothing."""
+    try:
+        with open(path) as f:
+            return Some(f.read())
+    except IOError:
+        return Nothing()
+```
+
+##### Nothing
+
+`Nothing() -> Option[T]`
+
+Construct a `Nothing` Option directly with a value.
+
+Note: as an implementation detail, `Nothing` is implemented as a singleton,
+to avoid instantiation time for any `Nothing` created after the first.
+However since this is an implementation detail, `Nothing` Options should
+still be compared with `==` rather than `is`.
+
+Example:
+
+```py
+def file_contents(path: str) -> Option[str]:
+    """Return the file contents or Nothing."""
+    try:
+        with open(path) as f:
+            return Some(f.read())
+    except IOError:
+        return Nothing()
+```
+
+##### Option.of
+
+`Option.of(value: t.Optional[T]) -> Option[T]`
+
+Convert an optional value into an Option. If the value is not `None`, return
+`Some(value)`. Otherwise, if the value is `None`, return `Nothing()`.
+
+Example:
+
+```py
+assert Option.of(None) == Nothing()
+assert Option.of({}.get("a")) == Nothing()
+assert Option.of("a") == Some("a")
+assert Option.of({"a": "b"}) == Some("b")
+```
+
+##### Option.nothing_if
+
+`Option.nothing_if(predicate: t.Callable[[T], bool], value: T) -> Option[T]`
+
+Call the provided predicate function with the provided value. If the predicate
+returns True, return `Nothing()`. If the predicate returns False, return
+`Some(value)`.
+
+Example:
+
+```py
+assert Option.nothing_if(lambda val: val.startswith("_"), "_private") == Nothing()
+assert Option.nothing_if(lambda val: val.startswith("_"), "public") == Some("public")
+```
+
+##### Option.some_if
+
+`Option.some_if(predicate: t.Callable[[T], bool], value: T) -> Option[T]`
+
+Call the provided predicate function with the provided value. If the predicate
+returns True, return `Some(value)`. If the predicate returns False, return
+`Nothing()`.
+
+Example:
+
+```py
+assert Option.some_if(bool, [1, 2, 3]) == Some([1, 2, 3])
+assert Option.some_if(bool, []) == Nothing()
+```
+
+#### Option Methods
+
+##### Option.and_
+
+`Option.and_(alternative: Option[U]) -> Option[U]`
+
+If this Option is `Nothing`, return it unchanged. Otherwise, if this Option
+is `Some`, return the provided `alternative` Option.
+
+Example:
+
+```py
+assert Some(1).and_(Some(2)) == Some(2)
+assert Nothing().and_(Some(2)) == Nothing()
+assert Some(1).and_(Nothing()) == Nothing()
+assert Nothing().and_(Nothing()) == Nothing()
+assert Some(1).and_(Nothing()).and_(Some(2)) == Nothing()
+```
+
+##### Option.or_
+
+`Option.or_(alternative: Option[T]) -> Option[T]`
+
+If this Option is `Nothing`, return the provided `alternative` Option.
+Otherwise, if this Option is `Some`, return it unchanged.
+
+Example:
+
+```py
+assert Some(1).or_(Some(2)) == Some(1)
+assert Some(1).or_(Nothing()) == Some(1)
+assert Nothing().or_(Some(1)) == Some(1)
+assert Nothing().or_(Nothing()) == Nothing()
+```
+
+##### Option.xor
+
+`Option.xor(alternative: Option[T]) -> Option[T]`
+
+Exclusive or. Return `Some` Option iff (if and only if) exactly one of
+this Option and hte provided `alternative` are Some. Otherwise, return
+`Nothing`.
+
+Example:
+
+```py
+assert Some(1).xor(Nothing()) == Some(1)
+assert Nothing().xor(Some(1)) == Some(1)
+assert Some(1).xor(Some(2)) == Nothing()
+assert Nothing().xor(Nothing()) == Nothing()
+```
+
+##### Option.and_then
+
+`Option.and_then(self, fn: t.Callable[[T], Option[U]]) -> Option[U]`
+
+If this Option is `Some`, call the provided, Option-returning function with
+the contained value and return whatever Option it returns. If this Option
+is `Nothing`, return it unchanged. This method is an alias for
+[`Option.flatmap`](#optionflatmap)
+
+Example:
+
+```py
+assert Some(1).and_then(lambda i: Some(i + 1)) == Some(2)
+assert Nothing().and_then(lambda i: Some(i + 1)) == Nothing()
+```
+
+##### Option.flatmap
+
+`Option.flatmap(self, fn: t.Callable[[T], Option[U]]) -> Option[U]`
+
+If this Option is `Some`, call the provided, Option-returning function with
+the contained value and return whatever Option it returns. If this Option
+is `Nothing`, return it unchanged. This method is an alias for
+[`Option.and_then`](#optionand_then)
+
+Example:
+
+```py
+assert Some(1).flatmap(Some) == Some(1)
+assert Nothing().flatmap(Some) == Nothing()
+```
+
+##### Option.or_else
+
+`Option.or_else(self, fn: t.Callable[[], Option[T]]) -> Option[T]`
+
+If this Option is `Nothing`, call the provided, Option-returning function
+and return whatever Option it returns. If this Option is `Some`, return it
+unchanged.
+
+Example:
+
+```py
+assert Nothing().or_else(lambda: Some(1)) == Some(1)
+assert Some(1).or_else(lambda: Some(2)) == Some(1)
+```
+
+##### Option.expect
+
+`Option.expect(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
+
+If this Option is `Some`, return the wrapped value. Otherwise, if this
+Option is `Nothing`, raise an error instantiated with the provided message.
+By default, a `RuntimeError` is raised, but a custom exception class may be
+provided via the `exc_cls` keyword argument.
+
+Example:
+
+```py
+import pytest
+
+with pytest.raises(RuntimeError) as exc:
+    Nothing().expect("Nothing here")
+    assert str(exc.value) == "Nothing here"
+
+assert Some(1).expect("Nothing here") == 1
+```
+
+##### Option.filter
+
+`Option.filter(self, predicate: t.Callable[[T], bool]) -> Option[T]`
+
+If this Option is `Some`, call the provided predicate function with the wrapped
+value. If the predicate returns True, return `Some` containing the wrapped
+value of this Option. If the predicate returns False, return `Nothing`. If
+this Option is `Nothing`, return it unchanged.
+
+Example:
+
+```py
+def is_even(val: int) -> bool:
+    """Return whether the value is even."""
+    return val % 2 == 0
+
+assert Some(2).filter(is_even) == Some(2)
+assert Some(1).filter(is_even) == Nothing()
+assert Nothing().filter(is_even) == Nothing()
+```
+
+##### Option.is_nothing
+
+`Option.is_nothing(self) -> bool`
+
+If this Option is `Nothing`, return True. Otherwise, if this Option is
+`Some`, return False.
+
+Example:
+
+```py
+assert Nothing().is_nothing() is True
+assert Some(1).is_nothing() is False
+```
+
+##### Option.is_some
+
+`Option.is_some(self) -> bool`
+
+If this Option is `Some`. Otherwise, if this Option is `Nothing`, return False.
+
+Example:
+
+```py
+assert Some(1).is_some() is True
+assert Nothing().is_some() is False
+```
+
+##### Option.iter
+
+`Option.iter(self) -> t.Iterator[T]`
 
 ## Performance
 
