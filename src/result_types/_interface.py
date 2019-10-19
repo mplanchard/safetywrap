@@ -56,25 +56,6 @@ class _Result(t.Generic[T, E]):
         """Return Ok(val) if predicate(val) is True, otherwise Err(val)."""
         raise NotImplementedError
 
-    # Same issue here with the default type
-    @staticmethod
-    def wrap(  # type: ignore
-        fn: t.Callable[..., T],
-        intercept: t.Iterable[t.Type[ExcType]] = (Exception,),
-    ) -> t.Callable[..., "_Result[T, ExcType]"]:
-        """Wrap or decorate a function so that it returns a Result."""
-        raise NotImplementedError
-
-    # Same issue here with the default type
-    @staticmethod
-    def wrap_for(
-        exceptions: t.Iterable[t.Type[ExcType]],
-    ) -> t.Callable[
-        [t.Callable[..., T]], t.Callable[..., "_Result[T, ExcType]"]
-    ]:
-        """Create a wrapper/decorator to intercept the given exceptions."""
-        raise NotImplementedError
-
     # ------------------------------------------------------------------
     # Methods
     # ------------------------------------------------------------------
@@ -227,13 +208,6 @@ class _Option(t.Generic[T]):
     @staticmethod
     def some_if(predicate: t.Callable[[T], bool], value: T) -> "_Option[T]":
         """Return Some(val) if predicate(val) is True, else Nothing()."""
-        raise NotImplementedError
-
-    @staticmethod
-    def wrap(
-        fn: t.Callable[..., t.Optional[T]]
-    ) -> t.Callable[..., "_Option[T]"]:
-        """Wrap a function to convert its result to an Option."""
         raise NotImplementedError
 
     # ------------------------------------------------------------------

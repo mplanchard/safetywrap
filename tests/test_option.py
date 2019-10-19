@@ -65,28 +65,6 @@ class TestOptionConstructors:
         """Test constructing based on some predicate."""
         assert Option.nothing_if(predicate, val) == exp
 
-    @pytest.mark.parametrize(
-        "fn, exp",
-        (
-            (lambda: None, Nothing()),
-            (lambda: 5, Some(5)),
-            (lambda: {}, Some({})),
-            (lambda: Some(5), Some(Some(5))),
-        ),
-    )
-    def test_wrap(
-        self, fn: t.Callable[[], t.Optional[t.Any]], exp: Option
-    ) -> None:
-        """Test wrapping/decorating a function to return an Option."""
-        wrapped: t.Callable[..., Option[t.Any]] = Option.wrap(fn)
-        assert wrapped() == exp
-
-        @Option.wrap
-        def fn_fn() -> t.Optional[t.Any]:
-            return fn()
-
-        assert fn_fn() == exp
-
 
 class TestOption:
     """Test the option type."""

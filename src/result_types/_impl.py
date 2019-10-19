@@ -61,36 +61,6 @@ class Result(_Result[T, E]):
             return Ok(value)
         return Err(value)
 
-    @staticmethod
-    def wrap(  # type: ignore
-        fn: t.Callable[..., T],
-        intercept: t.Iterable[t.Type[ExcType]] = (Exception,),
-    ) -> t.Callable[..., "Result[T, ExcType]"]:
-        """Intercept excpetions and automatically return a Result.
-
-        If the function
-        """
-
-        exceptions = tuple(intercept)
-
-        @wraps(fn)
-        def wrapper(*args: t.Any, **kwargs: t.Any) -> Result[T, ExcType]:
-            try:
-                return Ok(fn(*args, **kwargs))
-            except exceptions as exc:
-                return Err(exc)
-
-        return wrapper
-
-    @staticmethod
-    def wrap_for(
-        exceptions: t.Iterable[t.Type[ExcType]],
-    ) -> t.Callable[
-        [t.Callable[..., T]], t.Callable[..., "Result[T, ExcType]"]
-    ]:
-        """Create a wrapper/decorator to intercept the given exceptions."""
-        return partial(Result.wrap, intercept=exceptions)
-
 
 class Option(_Option[T]):
     """Base implementation for Option types."""
@@ -121,18 +91,6 @@ class Option(_Option[T]):
         if predicate(value):
             return Some(value)
         return Nothing()
-
-    @staticmethod
-    def wrap(
-        fn: t.Callable[..., t.Optional[T]]
-    ) -> t.Callable[..., "Option[T]"]:
-        """Wrap a function to convert its result to an Option."""
-
-        @wraps(fn)
-        def wrapper(*args: t.Any, **kwargs: t.Any) -> Option[T]:
-            return Option.of(fn(*args, **kwargs))
-
-        return wrapper
 
 
 # pylint: enable=abstract-method
