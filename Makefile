@@ -80,4 +80,6 @@ test-3.8-rc:
 
 test-all-versions: test-3.6 test-3.7 test-3.8
 
+bench: venv
+	source venv/bin/activate; bench/runner.sh
 
