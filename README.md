@@ -44,7 +44,7 @@ arguments or passing return values.
 In general, these examples build from simple to complex. See [Usage](#usage)
 below for the full API specification.
 
-**Get an enum member by its value, returning the member or None.**
+#### Get an enum member by its value, returning the member or None
 
 ```py
 import typing as t
@@ -52,9 +52,9 @@ from enum import Enum
 
 from result_types import Option, Result, Some
 
-E = t.TypeVar("E", bound=Enum)
+T = t.TypeVar("T", bound=Enum)
 
-def enum_member_for_val(enum: t.Type[E], value: t.Any) -> Option[E]:
+def enum_member_for_val(enum: t.Type[T], value: t.Any) -> Option[T]:
     """Return Some(enum_member) or Nothing()."""
     # Enums throw a `ValueError` if the value isn't present, so
     # we'll either have `Ok(enum_member)` or `Err(ValueError)`.
@@ -63,7 +63,7 @@ def enum_member_for_val(enum: t.Type[E], value: t.Any) -> Option[E]:
     return Result.of(enum, value).unwrap_or(None)
 ```
 
-**Get an enum member by its value, returning an Option.**
+#### Get an enum member by its value, returning an Option
 
 ```py
 import typing as t
@@ -71,30 +71,28 @@ from enum import Enum
 
 from result_types import Option, Result, Some
 
-E = t.TypeVar("E", bound=Enum)
+T = t.TypeVar("T", bound=Enum)
 
-def enum_member_for_val(enum: t.Type[E], value: t.Any) -> Option[E]:
+def enum_member_for_val(enum: t.Type[T], value: t.Any) -> Option[T]:
     """Return Some(enum_member) or Nothing()."""
-    return (
-        # Enums throw a `ValueError` if the value isn't present, so
-        # we'll either have `Ok(enum_member)` or `Err(ValueError)`
-        Result.of(enum, value)
-        # If it's Ok, wrap it in a Some
-        .map(Some)
-        # Return our Some(enum_member), or return Nothing()
-        .unwrap_or(Nothing())
-    )
+    # Enums throw a `ValueError` if the value isn't present, so
+    # we'll either have `Ok(enum_member)` or `Err(ValueError)`.
+    # Calling `ok()` on a `Result` returns an `Option`
+    return Result.of(enum, value).ok()
 ```
 
-**Serialize a dict that may be missing keys, using default values.**
+#### Serialize a dict that may be missing keys, using default values
 
 ```py
 import json
 from result_types import Result
 
 def serialize(data: t.Dict[str, t.Union[int, str, float]]) -> str:
-    """Serialize the data. Absent keys are [absent], rather than Null."""
-    absent = "[absent]"
+    """Serialize the data.
+
+    Absent keys are "[absent]", rather than null. This allows us to maintain
+    information about whether a key was present or actually set to None.
+    """
     keys = ("first", "second", "third", "fourth")
     # We can even use Result to catch any JSON serialization errors, so that
     # this function will _always_ return a string!
@@ -104,13 +102,11 @@ def serialize(data: t.Dict[str, t.Union[int, str, float]]) -> str:
         # `unwrap_or()` to discard the error and return the "[absent]" string
         # instead; if the key was present, the Result was Ok, and we just
         # return that value.
-        {k: Result.of(lambda: data[k]).unwrap_or(absent) for k in keys}
+        {k: Result.of(lambda: data[k]).unwrap_or("[absent]") for k in keys}
     ).unwrap_or("Could not serialize JSON from data!")
 ```
 
-**Make an HTTP request, and if the status code is 200, convert the body
-to JSON and return the `data` key. If there is an error or the `data`
-key does not exist, return an error string.**
+#### Make an HTTP request, and if the status code is 200, convert the body to JSON and return the `data` key. If there is an error or the `data` key does not exist, return an error string
 
 ```py
 from functools import partial
@@ -155,6 +151,64 @@ def get_data(url: str) -> str:
 
 ## Usage
 
+## Performance
+
+Benchmarking utilities are provided in [`bench`](/bench).
+
+Benchmarks may be run with `make bench`
+
+Currently, the [`sample.py`](/bench/sample.py) benchmark defines two data
+stores, one using classical python error handling (or lack thereof), and
+the other using this library's wrapper types. Some simple operations
+are performed using each data store for comparison.
+
+[`runner.sh`](/bench/runner.sh) runs the benchmarks two ways. First, it uses
+[hyperfine] to run the benchmarks as a normal python script 100 times and
+display information about the run time. It then uses python's builtin
+[timeit](https://docs.python.org/3/library/timeit.html) module to measure
+the code execution time in isolation over one million runs, without the
+added overhead of spinning up the interpreter to parse and run the script.
+
+### Results
+
+Summary: the `Result` and `Option` wrapper types add minimal overhead to
+execution time, which will not be noticeable for most real-world workloads.
+However, care should be taken if using these types in "hot paths."
+
+Run in isolation, the sample code using `Result` and `Option` types is
+about six times slower than builtin exception handling:
+
+| Method    | Number of Executions | Average Execution Time | Relative to Classical |
+| --------- | -------------------- | ---------------------- | --------------------- |
+| Classical | 1,000,000 (1E6)      | 3.79E-6 s (3.79 &mu;s) | 1x                    |
+| Wrapper   | 1,000,000 (1E6)      | 2.31E-5 s (23.1 &mu;s) | 6.09x                 |
+
+When run as part of a Python script, there is no significant difference
+between using code with these wrapper types versus code that uses builtin
+exception handling and nested if statements.
+
+| Method    | Number of Executions | Average Execution Time | Relative to Classical |
+| --------- | -------------------- | ---------------------- | --------------------- |
+| Classical | 100                  | 32.2 ms                | 1x                    |
+| Wrapper   | 100                  | 32.5 ms                | 1.01x                 |
+
+### Discussion
+
+Care has been taken to make the wrapper types in this library as performant
+as possible. All types use `__slots__` to avoid allocating a dictionary for
+instance variables, and wrapper variants (e.g. `Ok` and `Err` for `Result`)
+are implemented as separate subclasses of `Result` rather than a shared
+class in order to avoid needing to perform lots of `isinstance()` checks,
+which are notoriously slow in Python.
+
+That being said, using these types _is_ doing more than the builtin error
+handling! Instances are being constructed and methods are being accessed.
+Both of these are relatively quick in Python, but definitely not quicker
+than doing nothing, so this library will probably never be quite as performant
+as raw exception handling. That being said, that is not its aim! The goal
+is to be as quick as possible, preferably within striking distance of
+regular old idiomatic python, while providing significantly more ergonomics
+and type safety around handling errors and absent data.
 
 ## Contributing
 
@@ -174,5 +228,6 @@ The CI system requires that `make lint` and `make test` run successfully
 all supported python versions with `make test-all-versions`. This requires
 that `docker` be installed on your local system.
 
-[rust-result]: (https://doc.rust-lang.org/std/result/)
-[rust-option]: (https://doc.rust-lang.org/std/option/)
+[hyperfine]: https://github.com/sharkdp/hyperfine
+[rust-result]: https://doc.rust-lang.org/std/result/
+[rust-option]: https://doc.rust-lang.org/std/option/
