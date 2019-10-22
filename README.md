@@ -1281,7 +1281,7 @@ assert repr(Nothing()) == "Nothing()"
 ## Performance
 
 Benchmarks may be run with `make bench`. Benchmarking utilities are provided
-in [`bench`](/bench).
+in [`bench/`](/bench).
 
 Currently, the [`sample.py`](/bench/sample.py) benchmark defines two data
 stores, one using classical python error handling (or lack thereof), and
@@ -1297,7 +1297,7 @@ added overhead of spinning up the interpreter to parse and run the script.
 
 ### Results
 
-Summary: the `Result` and `Option` wrapper types add minimal overhead to
+The `Result` and `Option` wrapper types add minimal overhead to
 execution time, which will not be noticeable for most real-world workloads.
 However, care should be taken if using these types in "hot paths."
 
@@ -1324,8 +1324,8 @@ Care has been taken to make the wrapper types in this library as performant
 as possible. All types use `__slots__` to avoid allocating a dictionary for
 instance variables, and wrapper variants (e.g. `Ok` and `Err` for `Result`)
 are implemented as separate subclasses of `Result` rather than a shared
-class in order to avoid needing to perform lots of `isinstance()` checks,
-which are notoriously slow in Python.
+class in order to avoid needing to perform if/else branching or `isinstance()`
+checks, which are notoriously slow in Python.
 
 That being said, using these types _is_ doing more than the builtin error
 handling! Instances are being constructed and methods are being accessed.
@@ -1343,10 +1343,10 @@ of Python 3.
 
 Once you've forked and cloned the repo, you can run:
 
-* `make test` - run tests using your local interpreter
-* `make fmt` - format code using [black](https://github.com/python/black)
-* `make lint` - check code with a variety of analysis tools
-* `make bench` - run benchmarks
+- `make test` - run tests using your local interpreter
+- `make fmt` - format code using [black](https://github.com/python/black)
+- `make lint` - check code with a variety of analysis tools
+- `make bench` - run benchmarks
 
 See the [`Makefile`](Makefile) for other commands.
 
