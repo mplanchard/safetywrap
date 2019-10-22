@@ -903,6 +903,252 @@ assert Nothing().is_some() is False
 
 `Option.iter(self) -> t.Iterator[T]`
 
+If this Option is `Some`, return an iterator of length one over the wrapped
+value. Otherwise, if this Option is `Nothing`, return a 0-length iterator.
+
+Example:
+
+```py
+assert tuple(Some(1).iter()) == (1,)
+assert tuple(Nothing().iter()) == ()
+```
+
+##### Option.map
+
+`Option.map(self, fn: t.Callable[[T], U]) -> Option[U]`
+
+If this Option is `Some`, apply the provided function to the wrapped value,
+and return `Some` wrapping the result of the function. If this Option is
+`Nothing`, return this Option unchanged.
+
+Example:
+
+```py
+assert Some(1).map(str) == Some("1")
+assert Nothing().map(str) == Nothing()
+assert Some(1).map(str).map(lambda x: x + "a").map(str.upper) == Some("1A")
+```
+
+##### Option.map_or
+
+`Option.map_or(self, default: U, fn: t.Callable[[T], U]) -> U`
+
+If this Option is `Some`, apply the provided function to the wrapped value
+and return the result. If this Option is `Nothing`, return the provided
+default value.
+
+Example:
+
+```py
+assert Some(1).map_or("no value", str) == "1"
+assert Nothing().map_or("no value", str) == "no value"
+```
+
+##### Option.map_or_else
+
+`Option.map_or_else(self, default: t.Callable[[], U], fn: t.Callable[[T], U]) -> U`
+
+If this Option is `Some`, apply the provided function to the wrapped value and
+return the result. If this Option is `Nothing`, call the provided default
+function with no arguments and return the result.
+
+Example:
+
+```py
+from datetime import datetime, date
+
+assert Some("2005-08-28").map_or_else(
+    date.today,
+    lambda t: datetime.strptime(t, "%Y-%m-%d").date()
+) == datetime(2005, 8, 28).date()
+
+assert Nothing().map_or_else(
+    date.today,
+    lambda t: datetime.strptime(t, "%Y-%m-%d").date()
+) == date.today()
+```
+
+##### Option.ok_or
+
+`Option.ok_or(self, err: E) -> Result[T, E]`
+
+If this Option is `Some`, return an `Ok` Result wrapping the contained
+value. Otherwise, return an `Err` result wrapping the provided error.
+
+Example:
+
+```py
+assert Some(1).ok_or("no value!") == Ok(1)
+assert Nothing().ok_or("no value!") == Err("no value!")
+```
+
+##### Option.ok_or_else
+
+`Option.ok_or_else(self, err_fn: t.Callable[[], E]) -> Result[T, E]`
+
+If this Option is `Some`, return an `Ok` Result wrapping the contained
+value. Otherwise, call the provided `err_fn` and wrap its return value
+in an `Err` Result.
+
+Example:
+
+```py
+from functools import partial
+
+def make_err_msg(msg: str) -> str:
+    """Make an error message with some starting text."""
+    return f"[MY_APP_ERROR] -- {msg}"
+
+assert Some(1).ok_or_else(partial(make_err_msg, "no value!")) == Ok(1)
+assert Nothing().ok_or_else(partial(make_err_msg, "no value!")) == Err(
+    "[MY_APP_ERROR] -- no value!"
+)
+```
+
+##### Option.unwrap
+
+`Option.unwrap(self) -> T`
+
+If this Option is `Some`, return the wrapped value. Otherwise, raise a
+`RuntimeError`.
+
+Example:
+
+```py
+import pytest
+
+assert Some(1).unwrap() == 1
+
+with pytest.raises(RuntimeError):
+    Nothing().unwrap()
+```
+
+##### Option.unwrap_or
+
+`Option.unwrap_or(self, default: U) -> t.Union[T, U]`
+
+If this Option is `Some`, return the wrapped value. Otherwise, return the
+provided default.
+
+Example:
+
+```py
+assert Some(1),unwrap_or(-1) == 1
+assert Nothing().unwrap_or(-1) == -1
+```
+
+##### Option.unwrap_or_else
+
+`Option.unwrap_or_else(self, fn: t.Callable[[], U]) -> t.Union[T, U]`
+
+If this Option is `Some`, return the wrapped value. Otherwise, return the
+result of the provided function.
+
+Example:
+
+```py
+from datetime import date
+
+assert Some(date(2001, 1, 1)).unwrap_or_else(date.today) == date(2001, 1, 1)
+assert Nothing().unwrap_or_else(date.today) == date.today()
+```
+
+#### Option Magic Methods
+
+##### Option.__iter__
+
+`Option.__iter__(self) -> t.Iterator[T]`
+
+Implement the iterator protocol, allowing iteration over the results of
+[`Option.iter`](#optioniter). If this Option is `Ok`, return an iterator
+of length 1 containing the wrapped value. Otherwise, if this Option is `Nothing`,
+return a 0-length iterator.
+
+Example:
+
+```py
+# Can be passed to methods that take iterators
+assert tuple(Some(1)) == (1,)
+assert tuple(Nothing()j) == ()
+
+# Can be used in `for in` constructs, including comprehensions
+assert [val for val in Some(1)] == [1]
+assert [val for val in Nothing()] == []
+
+
+# More for-in usage.
+for val in Some(1):
+    pass
+assert val == 1
+
+val = None
+for val in Nothing():
+    pass
+assert val is None
+```
+
+##### Option.__eq__
+
+`Option.__eq__(self, other: Any) -> bool`
+
+Enable equality checking using `==`.
+
+Compare this Option with `other`. Return True if `other` is the same type of
+Option with the same wrapped value. Otherwise, return False.
+
+Example:
+
+```py
+assert (Some(1) == Some(1)) is True
+assert (Some(1) == Some(2)) is False
+assert (Some(1) == Nothing()) is False
+assert (Some(1) == 1) is False
+```
+
+##### Option.__ne__
+
+`Option.__ne__(self, other: Any) -> bool`
+
+Enable inequality checking using `!=`.
+
+Compare the Option with `other`. Return False if `other` is the same type of
+Option with the same wrapped value. Otherwise, return True.
+
+Example:
+
+```py
+assert (Some(1) != Some(1)) is False
+assert (Some(1) != Some(2)) is True
+assert (Some(1) != Nothing()) is True
+assert (Some(1) != 1) is True
+```
+
+##### Option.__str__
+
+`Option.__str__(self) -> str`
+
+Enable useful stringification via `str()`.
+
+Example:
+
+```py
+assert str(Some(1)) == "Some(1)"
+assert str(Nothing()) == "Nothing()"
+```
+
+##### Option.__repr__
+
+`Option.__repr__(self) -> str`
+
+Enable useful stringification via `repr()`.
+
+Example:
+
+```py
+assert repr(Some(1)) == "Some(1)"
+assert repr(Nothing()) == "Nothing()"
+```
+
 ## Performance
 
 Benchmarks may be run with `make bench`. Benchmarking utilities are provided
