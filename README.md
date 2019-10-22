@@ -86,9 +86,12 @@ with no doctors' visits and no hassles.
 We're pretty much always hiring great developers, so if you'd like to work
 with us, please check out [our careers page](https://hellobestow.com/careers/)!
 
+## Table of Contents
+
 - [result-types](#result-types)
   - [Summary](#summary)
     - [Sponsorship](#sponsorship)
+  - [Table of Contents](#table-of-contents)
   - [Examples](#examples)
     - [Get an enum member by its value, returning the member or None](#get-an-enum-member-by-its-value-returning-the-member-or-none)
     - [Get an enum member by its value, returning an Option](#get-an-enum-member-by-its-value-returning-an-option)
