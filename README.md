@@ -4,19 +4,11 @@
 [![Build Status](https://dev.azure.com/msplanchard/result-types/_apis/build/status/mplanchard.result-types?branchName=master)](https://dev.azure.com/msplanchard/result-types/_build/latest?definitionId=2&branchName=master)
 [![coverage report](https://gitlab.com/mplanchard/result-types/badges/master/coverage.svg)](https://gitlab.com/mplanchard/result-types/commits/master)
 
-Fully typesafe, Rust-like result types for Python
-
-This project was developed for and is graciously sponsored by my employer,
-[Bestow, Inc.](https://hellobestow.com/). At Bestow, we aim to democratize life
-insurance by providing simple, easy coverage, purchasable online in five minutes
-with no doctors' visits and no hassles.
-
-We're pretty much always hiring great developers, so if you'd like to work
-with us, please check out [our careers page](https://hellobestow.com/careers/)!
+Fully typesafe, Rust-inspired wrapper types for Python values
 
 ## Summary
 
-This library provides two main types: `Result` and `Option`. These types
+This library provides two main wrappers: `Result` and `Option`. These types
 allow you to specify typesafe code that effectively handles errors or
 absent data, without resorting to deeply nested if-statements and lots
 of try-except blocks.
@@ -27,9 +19,54 @@ in a sort of quantum superposition, where an `Option` could be `Some` or
 methods on the type work just the same, allowing you to handle both cases
 elegantly.
 
-A `Result[T, E]` may be an instance of `Ok[T]` or `Err[E]`.
+A `Result[T, E]` may be an instance of `Ok[T]` or `Err[E]`, while an `Option[T]`
+may be an instance of `Some[T]` or `Nothing`. Either way, you get to treat
+them just the same until you really need to get the wrapped value.
 
-An `Option[T]` may be an instance of `Some[T]` or `Nothing`.
+So, rather than this:
+
+```py
+for something in "value", None:
+    if something is not None:
+        val = something.upper()
+    else:
+        val = "DEFAULT"
+    print(val)
+```
+
+You can do this:
+
+```py
+for something in Some("value"), Nothing():
+    print(something.map(str.upper).unwrap_or("DEFAULT"))
+```
+
+And rather than this:
+
+```py
+for jsondata in '{"value": "myvalue"}', '{badjson':
+    try:
+        config = capitalize_keys(json.loads(jsondata))
+    except Exception:
+        config = get_default_config()
+    print(config["value"])
+```
+
+You can do this:
+
+```py
+for jsondata in '{"value": "myvalue"}', '{badjson':
+    print(
+        Result.of(json.loads, jsondata)
+        .map(capitalize_keys)
+        .unwrap_or_else(get_default_config)["value"]
+    )
+```
+
+These two examples are super minimal samples of how using these typesafe
+wrappers can make things easier to write and reason about. Please see the
+[Examples](#examples) section for more, and [Usage](#usage) for the full
+suite of offered functionality.
 
 These types are heavily influenced by the [Result][rust-result] and
 [Option][rust-option] types in Rust.
@@ -38,6 +75,95 @@ Thorough type specifications for mypy or your favorite python type-checker
 are provided, so that you can decorate function inputs and outputs as
 returning `Result` and `Option` types and get useful feedback when supplying
 arguments or passing return values.
+
+### Sponsorship
+
+This project was developed for and is graciously sponsored by my employer,
+[Bestow, Inc.](https://hellobestow.com/). At Bestow, we aim to democratize life
+insurance by providing simple, easy coverage, purchasable online in five minutes
+with no doctors' visits and no hassles.
+
+We're pretty much always hiring great developers, so if you'd like to work
+with us, please check out [our careers page](https://hellobestow.com/careers/)!
+
+- [result-types](#result-types)
+  - [Summary](#summary)
+    - [Sponsorship](#sponsorship)
+  - [Examples](#examples)
+    - [Get an enum member by its value, returning the member or None](#get-an-enum-member-by-its-value-returning-the-member-or-none)
+    - [Get an enum member by its value, returning an Option](#get-an-enum-member-by-its-value-returning-an-option)
+    - [Serialize a dict that may be missing keys, using default values](#serialize-a-dict-that-may-be-missing-keys-using-default-values)
+    - [Make an HTTP request, and if the status code is 200, convert the body to JSON and return the `data` key. If there is an error or the `data` key does not exist, return an error string](#make-an-http-request-and-if-the-status-code-is-200-convert-the-body-to-json-and-return-the-data-key-if-there-is-an-error-or-the-data-key-does-not-exist-return-an-error-string)
+  - [Usage](#usage)
+    - [Result[T, E]](#resultt-e)
+      - [Result Constructors](#result-constructors)
+        - [Ok](#ok)
+        - [Err](#err)
+        - [Result.of](#resultof)
+        - [Result.err_if](#resulterrif)
+        - [Result.ok_if](#resultokif)
+      - [Result Methods](#result-methods)
+        - [Result.and_](#resultand)
+        - [Result.or_](#resultor)
+        - [Result.and_then](#resultandthen)
+        - [Result.flatmap](#resultflatmap)
+        - [Result.or_else](#resultorelse)
+        - [Result.err](#resulterr)
+        - [Result.ok](#resultok)
+        - [Result.expect](#resultexpect)
+        - [Result.expect_err](#resultexpecterr)
+        - [Result.is_err](#resultiserr)
+        - [Result.is_ok](#resultisok)
+        - [Result.iter](#resultiter)
+        - [Result.map](#resultmap)
+        - [Result.map_err](#resultmaperr)
+        - [Result.unwrap](#resultunwrap)
+        - [Result.unwrap_err](#resultunwraperr)
+        - [Result.unwrap_or](#resultunwrapor)
+        - [Result.unwrap_or_else](#resultunwraporelse)
+      - [Result Magic Methods](#result-magic-methods)
+        - [Result.__iter__](#resultiter)
+        - [Result.__eq__](#resulteq)
+        - [Result.__ne__](#resultne)
+        - [Result.__str__](#resultstr)
+        - [Result.__repr__](#resultrepr)
+    - [Option[T]](#optiont)
+      - [Option Constructors](#option-constructors)
+        - [Some](#some)
+        - [Nothing](#nothing)
+        - [Option.of](#optionof)
+        - [Option.nothing_if](#optionnothingif)
+        - [Option.some_if](#optionsomeif)
+      - [Option Methods](#option-methods)
+        - [Option.and_](#optionand)
+        - [Option.or_](#optionor)
+        - [Option.xor](#optionxor)
+        - [Option.and_then](#optionandthen)
+        - [Option.flatmap](#optionflatmap)
+        - [Option.or_else](#optionorelse)
+        - [Option.expect](#optionexpect)
+        - [Option.filter](#optionfilter)
+        - [Option.is_nothing](#optionisnothing)
+        - [Option.is_some](#optionissome)
+        - [Option.iter](#optioniter)
+        - [Option.map](#optionmap)
+        - [Option.map_or](#optionmapor)
+        - [Option.map_or_else](#optionmaporelse)
+        - [Option.ok_or](#optionokor)
+        - [Option.ok_or_else](#optionokorelse)
+        - [Option.unwrap](#optionunwrap)
+        - [Option.unwrap_or](#optionunwrapor)
+        - [Option.unwrap_or_else](#optionunwraporelse)
+      - [Option Magic Methods](#option-magic-methods)
+        - [Option.__iter__](#optioniter)
+        - [Option.__eq__](#optioneq)
+        - [Option.__ne__](#optionne)
+        - [Option.__str__](#optionstr)
+        - [Option.__repr__](#optionrepr)
+  - [Performance](#performance)
+    - [Results](#results)
+    - [Discussion](#discussion)
+  - [Contributing](#contributing)
 
 ## Examples
 
