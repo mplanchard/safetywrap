@@ -183,7 +183,7 @@ from result_types import Option, Result, Some
 
 T = t.TypeVar("T", bound=Enum)
 
-def enum_member_for_val(enum: t.Type[T], value: t.Any) -> Option[T]:
+def enum_member_for_val(enum: t.Type[T], value: t.Any) -> t.Optional[t.Any]:
     """Return Some(enum_member) or Nothing()."""
     # Enums throw a `ValueError` if the value isn't present, so
     # we'll either have `Ok(enum_member)` or `Err(ValueError)`.
