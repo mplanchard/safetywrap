@@ -23,6 +23,4 @@ class TestPublicInterface:
             "Some",
             "Nothing",
         )
-        assert all(
-            map(lambda attr: bool(getattr(safetywrap, attr)), exp_attrs)
-        )
+        assert all(map(lambda attr: bool(getattr(safetywrap, attr)), exp_attrs))
