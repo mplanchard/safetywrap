@@ -13,7 +13,7 @@ import typing as t
 
 from timeit import timeit
 
-from result_types import Some, Nothing, Ok, Err, Option, Result
+from safetywrap import Some, Nothing, Ok, Err, Option, Result
 
 
 T = t.TypeVar("T")

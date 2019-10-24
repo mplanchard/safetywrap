@@ -11,7 +11,7 @@ cwd = dirname(realpath(__file__))
 # Contact Information
 ########################################################################
 
-URL = "https://www.github.com/mplanchard/result-types"
+URL = "https://www.github.com/mplanchard/safetywrap"
 AUTHOR = "Matthew Planchard"
 EMAIL = "msplanchard@gmail.com"
 
@@ -20,7 +20,7 @@ EMAIL = "msplanchard@gmail.com"
 # Package Description
 ########################################################################
 
-NAME = "result_types"
+NAME = "safetywrap"
 SHORT_DESC = "Rust-inspired typesafe result types"
 
 with open(join(cwd, "README.md")) as readme:
@@ -93,7 +93,7 @@ EXTRAS_DEPENDENCIES: t.Dict[str, t.Sequence[str]] = {
 ########################################################################
 
 ENTRY_POINTS: t.Union[str, t.Dict[str, t.Union[str, t.Sequence[str]]]] = {}
-PACKAGE_DATA: t.Dict[str, t.Sequence[str]] = {"result_types": ["py.typed"]}
+PACKAGE_DATA: t.Dict[str, t.Sequence[str]] = {"safetywrap": ["py.typed"]}
 
 
 ########################################################################

@@ -1,7 +1,6 @@
-# result-types
+# safetywrap
 
-[![pipeline status](https://gitlab.com/mplanchard/result-types/badges/master/pipeline.svg)](https://gitlab.com/mplanchard/result-types/commits/master)
-[![Build Status](https://dev.azure.com/msplanchard/result-types/_apis/build/status/mplanchard.result-types?branchName=master)](https://dev.azure.com/msplanchard/result-types/_build/latest?definitionId=2&branchName=master)
+[![Build Status](https://dev.azure.com/msplanchard/safetywrap/_apis/build/status/mplanchard.safetywrap?branchName=master)](https://dev.azure.com/msplanchard/safetywrap/_build/latest?definitionId=3&branchName=master)
 [![coverage report](https://gitlab.com/mplanchard/result-types/badges/master/coverage.svg)](https://gitlab.com/mplanchard/result-types/commits/master)
 
 Fully typesafe, Rust-inspired wrapper types for Python values
@@ -88,7 +87,7 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
 
 ## Table of Contents
 
-- [result-types](#result-types)
+- [safetywrap](#safetywrap)
   - [Summary](#summary)
     - [Sponsorship](#sponsorship)
   - [Table of Contents](#table-of-contents)
@@ -179,7 +178,7 @@ below for the full API specification.
 import typing as t
 from enum import Enum
 
-from result_types import Option, Result, Some
+from safetywrap import Option, Result, Some
 
 T = t.TypeVar("T", bound=Enum)
 
@@ -198,7 +197,7 @@ def enum_member_for_val(enum: t.Type[T], value: t.Any) -> t.Optional[t.Any]:
 import typing as t
 from enum import Enum
 
-from result_types import Option, Result, Some
+from safetywrap import Option, Result, Some
 
 T = t.TypeVar("T", bound=Enum)
 
@@ -214,7 +213,7 @@ def enum_member_for_val(enum: t.Type[T], value: t.Any) -> Option[T]:
 
 ```py
 import json
-from result_types import Result
+from safetywrap import Result
 
 def serialize(data: t.Dict[str, t.Union[int, str, float]]) -> str:
     """Serialize the data.
@@ -242,7 +241,7 @@ from functools import partial
 
 import requests
 from requests import Response
-from result_types import Option, Result
+from safetywrap import Option, Result
 
 
 def get_data(url: str) -> str:
@@ -1353,7 +1352,7 @@ See the [`Makefile`](Makefile) for other commands.
 The CI system requires that `make lint` and `make test` run successfully
 (exit status of 0) in order to merge code.
 
-`result_types` is compatible with Python >= 3.6. You can run against
+`safetywrap` is compatible with Python >= 3.6. You can run against
 all supported python versions with `make test-all-versions`. This requires
 that `docker` be installed on your local system. Alternatively, if you
 have all required Python versions installed, you may run `make tox` to

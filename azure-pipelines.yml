@@ -31,3 +31,7 @@ steps:
 - script: |
     make test
   displayName: 'test'
+
+- task: PublishCodeCoverageResults@1
+  inputs:
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/.coverage.xml'

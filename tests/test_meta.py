@@ -4,8 +4,8 @@ import typing as t
 
 import pytest
 
-from result_types._interface import _Option, _Result
-from result_types import Some, Nothing, Option, Ok, Err, Result
+from safetywrap._interface import _Option, _Result
+from safetywrap import Some, Nothing, Option, Ok, Err, Result
 
 
 class TestInterfaceConformance:

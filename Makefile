@@ -1,11 +1,11 @@
 VENV = . ./venv/bin/activate;
-TEST = pytest --cov-config=setup.cfg --cov=result_types tests
+TEST = pytest --cov-config=setup.cfg --cov-report=xml:.coverage.xml --cov-report=term --cov=safetywrap tests
 LINE_LENGTH = 80
 PKG_DIR = src
 TEST_DIR = tests
 SRC_FILES = *.py $(PKG_DIR) $(TEST_DIR)
 
-.PHONY: build clean distribute fmt lint test
+.PHONY: bench build clean distribute fmt lint test
 
 all: fmt lint test
 

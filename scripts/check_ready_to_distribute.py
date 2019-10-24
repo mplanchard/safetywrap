@@ -4,12 +4,12 @@
 from subprocess import Popen, PIPE
 from sys import argv
 
-import result_types
+import safetywrap
 
 
 def check_version(version: str) -> None:
     """Ensure the version matches the package."""
-    assert version == result_types.__version__, "Failed version check."
+    assert version == safetywrap.__version__, "Failed version check."
 
 
 def check_branch() -> None:

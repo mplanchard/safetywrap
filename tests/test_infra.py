@@ -1,6 +1,6 @@
 """Ensure CI & any other infra is set up correctly."""
 
-import result_types
+import safetywrap
 
 
 def test_pass() -> None:
@@ -24,5 +24,5 @@ class TestPublicInterface:
             "Nothing",
         )
         assert all(
-            map(lambda attr: bool(getattr(result_types, attr)), exp_attrs)
+            map(lambda attr: bool(getattr(safetywrap, attr)), exp_attrs)
         )

@@ -4,7 +4,7 @@ import typing as t
 
 import pytest
 
-from result_types import Ok, Err, Result, Some, Nothing, Option
+from safetywrap import Ok, Err, Result, Some, Nothing, Option
 
 
 def _sq(val: int) -> Result[int, int]:

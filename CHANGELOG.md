@@ -21,5 +21,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic benchmarks for analyzing performance
 - Apache license
 
-[Unreleased]: https://github.com/mplanchard/result-types/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/mplanchard/result-types/compare/f87fa5b1a00af5ef26213e576730039d87f7163b...v1.0.0
+[Unreleased]: https://github.com/mplanchard/safetywrap/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/mplanchard/safetywrap/compare/f87fa5b1a00af5ef26213e576730039d87f7163b...v1.0.0
