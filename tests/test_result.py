@@ -127,6 +127,13 @@ class TestResult:
         """Test that and_then chains result-generating functions."""
         assert start.and_then(first).and_then(second) == exp
 
+    def test_flatmap(self) -> None:
+        """Flatmap is an alias for and_then"""
+        ok: Result[int, int] = Ok(2)
+        err: Result[int, int] = Err(2)
+        assert ok.flatmap(_sq) == Ok(4)
+        assert err.flatmap(_sq) == Err(2)
+
     @pytest.mark.parametrize(
         "start, first, second, exp",
         (
@@ -282,3 +289,28 @@ class TestResult:
     ) -> None:
         """Calculates a result from Err() value if present."""
         assert start.unwrap_or_else(fn) == exp
+
+    @pytest.mark.parametrize(
+        "inst, other, eq",
+        (
+            (Ok(1), Ok(1), True),
+            (Ok(1), Ok(2), False),
+            (Ok(1), Err(1), False),
+            (Ok(1), 1, False),
+            (Err(1), Err(1), True),
+            (Err(1), Err(2), False),
+            (Err(1), Ok(1), False),
+            (Err(1), 1, False),
+        ),
+    )
+    def test_equality_inequality(
+        self, inst: t.Any, other: t.Any, eq: bool
+    ) -> None:
+        """Test equality and inequality of results."""
+        assert (inst == other) is eq
+        assert (inst != other) is not eq
+
+    def test_stringify(self) -> None:
+        """Repr and str representations are equivalent."""
+        assert repr(Ok(1)) == str(Ok(1)) == "Ok(1)"
+        assert repr(Err(1)) == str(Err(1)) == "Err(1)"

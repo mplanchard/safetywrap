@@ -242,3 +242,27 @@ class TestOption:
     def test_unwrap_or_else(self, opt: Option[int], exp: int) -> None:
         """Unwraps a `Some()` or returns a default."""
         assert opt.unwrap_or_else(lambda: 42) == exp
+
+    @pytest.mark.parametrize(
+        "inst, other, eq",
+        (
+            (Some(1), Some(1), True),
+            (Some(1), Some(2), False),
+            (Some(1), Nothing(), False),
+            (Some(1), 1, False),
+            (Nothing(), Nothing(), True),
+            (Nothing(), Some(1), False),
+            (Nothing(), None, False),
+        ),
+    )
+    def test_equality_inequality(
+        self, inst: t.Any, other: t.Any, eq: bool
+    ) -> None:
+        """Test equality and inequality of results."""
+        assert (inst == other) is eq
+        assert (inst != other) is not eq
+
+    def test_stringify(self) -> None:
+        """Repr and str representations are equivalent."""
+        assert repr(Some(1)) == str(Some(1)) == "Some(1)"
+        assert repr(Nothing()) == str(Nothing()) == "Nothing()"
