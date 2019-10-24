@@ -1,7 +1,7 @@
 # safetywrap
 
 [![Build Status](https://dev.azure.com/msplanchard/safetywrap/_apis/build/status/mplanchard.safetywrap?branchName=master)](https://dev.azure.com/msplanchard/safetywrap/_build/latest?definitionId=3&branchName=master)
-[![coverage report](https://gitlab.com/mplanchard/result-types/badges/master/coverage.svg)](https://gitlab.com/mplanchard/result-types/commits/master)
+[![coverage report](https://img.shields.io/azure-devops/coverage/msplanchard/safetywrap/3)](https://dev.azure.com/msplanchard/safetywrap/_build?definitionId=3)
 
 Fully typesafe, Rust-inspired wrapper types for Python values
 
@@ -178,7 +178,7 @@ below for the full API specification.
 import typing as t
 from enum import Enum
 
-from safetywrap import Option, Result, Some
+from result_types import Option, Result, Some
 
 T = t.TypeVar("T", bound=Enum)
 
@@ -197,7 +197,7 @@ def enum_member_for_val(enum: t.Type[T], value: t.Any) -> t.Optional[t.Any]:
 import typing as t
 from enum import Enum
 
-from safetywrap import Option, Result, Some
+from result_types import Option, Result, Some
 
 T = t.TypeVar("T", bound=Enum)
 
@@ -213,7 +213,7 @@ def enum_member_for_val(enum: t.Type[T], value: t.Any) -> Option[T]:
 
 ```py
 import json
-from safetywrap import Result
+from result_types import Result
 
 def serialize(data: t.Dict[str, t.Union[int, str, float]]) -> str:
     """Serialize the data.
@@ -241,7 +241,7 @@ from functools import partial
 
 import requests
 from requests import Response
-from safetywrap import Option, Result
+from result_types import Option, Result
 
 
 def get_data(url: str) -> str:
@@ -1352,7 +1352,7 @@ See the [`Makefile`](Makefile) for other commands.
 The CI system requires that `make lint` and `make test` run successfully
 (exit status of 0) in order to merge code.
 
-`safetywrap` is compatible with Python >= 3.6. You can run against
+`result_types` is compatible with Python >= 3.6. You can run against
 all supported python versions with `make test-all-versions`. This requires
 that `docker` be installed on your local system. Alternatively, if you
 have all required Python versions installed, you may run `make tox` to
