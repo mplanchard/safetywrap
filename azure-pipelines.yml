@@ -34,4 +34,4 @@ steps:
 
 - task: PublishCodeCoverageResults@1
   inputs:
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/.coverage.xml'
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/.coverage.xml'
