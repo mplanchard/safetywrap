@@ -17,17 +17,17 @@ def check_branch() -> None:
     proc = Popen(
         ("git", "rev-parse", "--abbrev-ref", "HEAD"), stdout=PIPE, stderr=PIPE
     )
-    out, _ = proc.communicate()
-    assert proc.returncode == 0
-    assert out.decode().strip() == "master"
+    out, err = proc.communicate()
+    assert proc.returncode == 0, err.decode()
+    assert out.decode().strip() == "master", "Not on master!"
 
 
 def check_diff() -> None:
     """Ensure there is no git diff output with origin/master."""
     proc = Popen(("git", "diff", "origin/master"), stdout=PIPE, stderr=PIPE)
-    out, _ = proc.communicate()
-    assert proc.returncode == 0
-    assert out.decode().strip() == ""
+    out, err = proc.communicate()
+    assert proc.returncode == 0, err.decode()
+    assert out.decode().strip() == "", "There is a diff with origin/master!"
 
 
 def main() -> None:
