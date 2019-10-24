@@ -1,6 +1,8 @@
 VENV = . ./venv/bin/activate;
 TEST = pytest \
 	--cov-config=setup.cfg \
+	--cov-report=xml:.coverage.xml \
+	--cov-report=term \
 	--cov=safetywrap \
 	--junit-xml=.pytest.xml \
 	tests
