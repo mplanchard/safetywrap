@@ -27,7 +27,18 @@ with open(join(cwd, "README.md")) as readme:
     LONG_DESC = readme.read()
 LONG_DESC_CONTENT_TYPE = "text/markdown"
 
-KEYWORDS = ["python", "rust", "result", "option", "types", "typesafe"]
+KEYWORDS = [
+    "python",
+    "rust",
+    "result",
+    "option",
+    "typed",
+    "types",
+    "typesafe",
+    "monad",
+    "wrapper",
+    "safety",
+]
 CLASSIFIERS = [
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers for all
     # available setup classifiers
@@ -55,6 +66,9 @@ CLASSIFIERS = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     # 'Programming Language :: Python :: Implementation :: PyPy',
 ]
 
@@ -63,6 +77,7 @@ CLASSIFIERS = [
 # Dependency Specification
 ########################################################################
 
+PYTHON_REQUIRES = ">=3.6"
 PACKAGE_DEPENDENCIES: t.Tuple[str, ...] = ()
 SETUP_DEPENDENCIES: t.Tuple[str, ...] = ()
 TEST_DEPENDENCIES: t.Tuple[str, ...] = ()
@@ -133,6 +148,7 @@ setup(
     package_data=PACKAGE_DATA,
     package_dir={"": "src"},
     packages=find_packages(where="src"),
+    python_requires=PYTHON_REQUIRES,
     setup_requires=SETUP_DEPENDENCIES,
     tests_require=TEST_DEPENDENCIES,
     url=URL,
