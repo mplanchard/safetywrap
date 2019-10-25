@@ -96,6 +96,7 @@ EXTRAS_DEPENDENCIES: t.Dict[str, t.Sequence[str]] = {
             "pytest",
             "pytest-cov",
             "tox",
+            "twine",
             "typeguard",
             "wheel",
         )
