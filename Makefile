@@ -51,7 +51,7 @@ clean:
 distribute: build
 	$(VENV) scripts/check_ready_to_distribute.py $(VERSION)
 	git tag -s "v$(VERSION)"
-	twine upload -s dist/*
+	$(VENV) twine upload -s dist/*
 	git push --tags
 
 fmt: venv
