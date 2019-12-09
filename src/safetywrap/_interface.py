@@ -2,6 +2,9 @@
 
 import typing as t
 
+if t.TYPE_CHECKING:
+    from ._impl import Option, Result  # pylint: disable=unused-import
+
 # pylint: disable=invalid-name
 
 T = t.TypeVar("T")
@@ -37,7 +40,7 @@ class _Result(t.Generic[T, E]):
         *args: t.Any,
         catch: t.Type[ExcType] = Exception,  # type: ignore
         **kwargs: t.Any
-    ) -> "_Result[T, ExcType]":
+    ) -> "Result[T, ExcType]":
         """Call `fn` and wrap its result in an `Ok()`.
 
         If an exception is intercepted, return `Err(exception)`. By
@@ -47,12 +50,12 @@ class _Result(t.Generic[T, E]):
         raise NotImplementedError
 
     @staticmethod
-    def err_if(predicate: t.Callable[[T], bool], value: T) -> "_Result[T, T]":
+    def err_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
         """Return Err(val) if predicate(val) is True, otherwise Ok(val)."""
         raise NotImplementedError
 
     @staticmethod
-    def ok_if(predicate: t.Callable[[T], bool], value: T) -> "_Result[T, T]":
+    def ok_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
         """Return Ok(val) if predicate(val) is True, otherwise Err(val)."""
         raise NotImplementedError
 
@@ -60,37 +63,37 @@ class _Result(t.Generic[T, E]):
     # Methods
     # ------------------------------------------------------------------
 
-    def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
+    def and_(self, res: "Result[U, E]") -> "Result[U, E]":
         """Return `res` if self is `Ok`, otherwise return `self`."""
         raise NotImplementedError
 
-    def or_(self, res: "_Result[T, F]") -> "_Result[T, F]":
+    def or_(self, res: "Result[T, F]") -> "Result[T, F]":
         """Return `res` if self is `Err`, otherwise `self`."""
         raise NotImplementedError
 
-    def and_then(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+    def and_then(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
         """Call `fn` if Ok, or ignore an error. Alias of `flatmap`.
 
         This can be used to chain functions that return results.
         """
         raise NotImplementedError
 
-    def flatmap(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+    def flatmap(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
         """Call `fn` if Ok, or ignore an error. Alias of `and_then`
 
         This can be used to chain functions that return results.
         """
         raise NotImplementedError
 
-    def or_else(self, fn: t.Callable[[E], "_Result[T, F]"]) -> "_Result[T, F]":
+    def or_else(self, fn: t.Callable[[E], "Result[T, F]"]) -> "Result[T, F]":
         """Return `self` if `Ok`, or call `fn` with `self` if `Err`."""
         raise NotImplementedError
 
-    def err(self) -> "_Option[E]":
+    def err(self) -> "Option[E]":
         """Return Err value if result is Err."""
         raise NotImplementedError
 
-    def ok(self) -> "_Option[T]":
+    def ok(self) -> "Option[T]":
         """Return OK value if result is Ok."""
         raise NotImplementedError
 
@@ -127,11 +130,11 @@ class _Result(t.Generic[T, E]):
         """
         raise NotImplementedError
 
-    def map(self, fn: t.Callable[[T], U]) -> "_Result[U, E]":
+    def map(self, fn: t.Callable[[T], U]) -> "Result[U, E]":
         """Map a function onto an okay result, or ignore an error."""
         raise NotImplementedError
 
-    def map_err(self, fn: t.Callable[[E], F]) -> "_Result[T, F]":
+    def map_err(self, fn: t.Callable[[E], F]) -> "Result[T, F]":
         """Map a function onto an error, or ignore a success."""
         raise NotImplementedError
 
@@ -192,17 +195,17 @@ class _Option(t.Generic[T]):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def of(value: t.Optional[T]) -> "_Option[T]":
+    def of(value: t.Optional[T]) -> "Option[T]":
         """Construct an _Option[T] from an Optional[T]."""
         raise NotImplementedError
 
     @staticmethod
-    def nothing_if(predicate: t.Callable[[T], bool], value: T) -> "_Option[T]":
+    def nothing_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
         """Return Nothing() if predicate(val) is True, else Some(val)."""
         raise NotImplementedError
 
     @staticmethod
-    def some_if(predicate: t.Callable[[T], bool], value: T) -> "_Option[T]":
+    def some_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
         """Return Some(val) if predicate(val) is True, else Nothing()."""
         raise NotImplementedError
 
@@ -210,27 +213,27 @@ class _Option(t.Generic[T]):
     # Methods
     # ------------------------------------------------------------------
 
-    def and_(self, alternative: "_Option[U]") -> "_Option[U]":
+    def and_(self, alternative: "Option[U]") -> "Option[U]":
         """Return `Nothing` if `self` is `Nothing`, or the `alternative`."""
         raise NotImplementedError
 
-    def or_(self, alternative: "_Option[T]") -> "_Option[T]":
+    def or_(self, alternative: "Option[T]") -> "Option[T]":
         """Return option if it is `Some`, or the `alternative`."""
         raise NotImplementedError
 
-    def xor(self, alternative: "_Option[T]") -> "_Option[T]":
+    def xor(self, alternative: "Option[T]") -> "Option[T]":
         """Return Some IFF exactly one of `self`, `alternative` is `Some`."""
         raise NotImplementedError
 
-    def and_then(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
+    def and_then(self, fn: t.Callable[[T], "Option[U]"]) -> "Option[U]":
         """Return `Nothing`, or call `fn` with the `Some` value."""
         raise NotImplementedError
 
-    def flatmap(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
+    def flatmap(self, fn: t.Callable[[T], "Option[U]"]) -> "Option[U]":
         """Return `Nothing`, or call `fn` with the `Some` value."""
         raise NotImplementedError
 
-    def or_else(self, fn: t.Callable[[], "_Option[T]"]) -> "_Option[T]":
+    def or_else(self, fn: t.Callable[[], "Option[T]"]) -> "Option[T]":
         """Return option if it is `Some`, or calculate an alternative."""
         raise NotImplementedError
 
@@ -242,7 +245,7 @@ class _Option(t.Generic[T]):
         """
         raise NotImplementedError
 
-    def filter(self, predicate: t.Callable[[T], bool]) -> "_Option[T]":
+    def filter(self, predicate: t.Callable[[T], bool]) -> "Option[T]":
         """Return `Nothing`, or an option determined by the predicate.
 
         If `self` is `Some`, call `predicate` with the wrapped value and
@@ -266,7 +269,7 @@ class _Option(t.Generic[T]):
         """Return an iterator over the possibly contained value."""
         raise NotImplementedError
 
-    def map(self, fn: t.Callable[[T], U]) -> "_Option[U]":
+    def map(self, fn: t.Callable[[T], U]) -> "Option[U]":
         """Apply `fn` to the contained value if any."""
         raise NotImplementedError
 
@@ -280,14 +283,14 @@ class _Option(t.Generic[T]):
         """Apply `fn` to contained value, or compute a default."""
         raise NotImplementedError
 
-    def ok_or(self, err: E) -> _Result[T, E]:
+    def ok_or(self, err: E) -> "Result[T, E]":
         """Transform an option into a `Result`.
 
         Maps `Some(v)` to `Ok(v)` or `None` to `Err(err)`.
         """
         raise NotImplementedError
 
-    def ok_or_else(self, err_fn: t.Callable[[], E]) -> _Result[T, E]:
+    def ok_or_else(self, err_fn: t.Callable[[], E]) -> "Result[T, E]":
         """Transform an option into a `Result`.
 
         Maps `Some(v)` to `Ok(v)` or `None` to `Err(err_fn())`.

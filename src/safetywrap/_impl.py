@@ -103,37 +103,37 @@ class Ok(Result[T, E]):
         """Wrap a result."""
         self._value: T = result
 
-    def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
+    def and_(self, res: "Result[U, E]") -> "Result[U, E]":
         """Return `res` if the result is `Ok`, otherwise return `self`."""
         return res
 
-    def or_(self, res: "_Result[T, F]") -> "_Result[T, F]":
+    def or_(self, res: "Result[T, F]") -> "Result[T, F]":
         """Return `res` if the result is `Err`, otherwise `self`."""
         return t.cast(Result[T, F], self)
 
-    def and_then(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+    def and_then(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
         """Call `fn` if Ok, or ignore an error.
 
         This can be used to chain functions that return results.
         """
         return fn(self._value)
 
-    def flatmap(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+    def flatmap(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
         """Call `fn` if Ok, or ignore an error.
 
         This can be used to chain functions that return results.
         """
         return self.and_then(fn)
 
-    def or_else(self, fn: t.Callable[[E], "_Result[T, F]"]) -> "_Result[T, F]":
+    def or_else(self, fn: t.Callable[[E], "Result[T, F]"]) -> "Result[T, F]":
         """Return `self` if `Ok`, or call `fn` with `self` if `Err`."""
         return t.cast(Result[T, F], self)
 
-    def err(self) -> _Option[E]:
+    def err(self) -> Option[E]:
         """Return Err value if result is Err."""
         return Nothing()
 
-    def ok(self) -> _Option[T]:
+    def ok(self) -> Option[T]:
         """Return OK value if result is Ok."""
         return Some(self._value)
 
@@ -170,11 +170,11 @@ class Ok(Result[T, E]):
         """
         return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> "_Result[U, E]":
+    def map(self, fn: t.Callable[[T], U]) -> "Result[U, E]":
         """Map a function onto an okay result, or ignore an error."""
         return Ok(fn(self._value))
 
-    def map_err(self, fn: t.Callable[[E], F]) -> "_Result[T, F]":
+    def map_err(self, fn: t.Callable[[E], F]) -> "Result[T, F]":
         """Map a function onto an error, or ignore a success."""
         return t.cast(Result[T, F], self)
 
@@ -232,37 +232,37 @@ class Err(Result[T, E]):
         """Wrap a result."""
         self._value = result
 
-    def and_(self, res: "_Result[U, E]") -> "_Result[U, E]":
+    def and_(self, res: "Result[U, E]") -> "Result[U, E]":
         """Return `res` if the result is `Ok`, otherwise return `self`."""
         return t.cast(Result[U, E], self)
 
-    def or_(self, res: "_Result[T, F]") -> "_Result[T, F]":
+    def or_(self, res: "Result[T, F]") -> "Result[T, F]":
         """Return `res` if the result is `Err`, otherwise `self`."""
         return res
 
-    def and_then(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+    def and_then(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
         """Call `fn` if Ok, or ignore an error.
 
         This can be used to chain functions that return results.
         """
         return t.cast(Result[U, E], self)
 
-    def flatmap(self, fn: t.Callable[[T], "_Result[U, E]"]) -> "_Result[U, E]":
+    def flatmap(self, fn: t.Callable[[T], "Result[U, E]"]) -> "Result[U, E]":
         """Call `fn` if Ok, or ignore an error.
 
         This can be used to chain functions that return results.
         """
-        return self.and_then(fn)
+        return t.cast(Result[U, E], self.and_then(fn))
 
-    def or_else(self, fn: t.Callable[[E], "_Result[T, F]"]) -> "_Result[T, F]":
+    def or_else(self, fn: t.Callable[[E], "Result[T, F]"]) -> "Result[T, F]":
         """Return `self` if `Ok`, or call `fn` with `self` if `Err`."""
         return fn(self._value)
 
-    def err(self) -> _Option[E]:
+    def err(self) -> Option[E]:
         """Return Err value if result is Err."""
         return Some(self._value)
 
-    def ok(self) -> _Option[T]:
+    def ok(self) -> Option[T]:
         """Return OK value if result is Ok."""
         return Nothing()
 
@@ -299,11 +299,11 @@ class Err(Result[T, E]):
         """
         return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> "_Result[U, E]":
+    def map(self, fn: t.Callable[[T], U]) -> "Result[U, E]":
         """Map a function onto an okay result, or ignore an error."""
         return t.cast(Result[U, E], self)
 
-    def map_err(self, fn: t.Callable[[E], F]) -> "_Result[T, F]":
+    def map_err(self, fn: t.Callable[[E], F]) -> "Result[T, F]":
         """Map a function onto an error, or ignore a success."""
         return Err(fn(self._value))
 
@@ -363,29 +363,29 @@ class Some(Option[T]):
         # not sure why pylint things _value is not in __slots__
         self._value = value  # pylint: disable=assigning-non-slot
 
-    def and_(self, alternative: _Option[U]) -> _Option[U]:
+    def and_(self, alternative: Option[U]) -> Option[U]:
         """Return `Nothing` if `self` is `Nothing`, or the `alternative`."""
         return alternative
 
-    def or_(self, alternative: _Option[T]) -> _Option[T]:
+    def or_(self, alternative: Option[T]) -> Option[T]:
         """Return option if it is `Some`, or the `alternative`."""
         return self
 
-    def xor(self, alternative: _Option[T]) -> _Option[T]:
+    def xor(self, alternative: Option[T]) -> Option[T]:
         """Return Some IFF exactly one of `self`, `alternative` is `Some`."""
         return (
-            t.cast(_Option[T], self) if alternative.is_nothing() else Nothing()
+            t.cast(Option[T], self) if alternative.is_nothing() else Nothing()
         )
 
-    def and_then(self, fn: t.Callable[[T], _Option[U]]) -> _Option[U]:
+    def and_then(self, fn: t.Callable[[T], Option[U]]) -> Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
         return fn(self._value)
 
-    def flatmap(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
+    def flatmap(self, fn: t.Callable[[T], Option[U]]) -> Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
-        return self.and_then(fn)
+        return t.cast(Option[U], self.and_then(fn))
 
-    def or_else(self, fn: t.Callable[[], _Option[T]]) -> _Option[T]:
+    def or_else(self, fn: t.Callable[[], Option[T]]) -> Option[T]:
         """Return option if it is `Some`, or calculate an alternative."""
         return self
 
@@ -397,7 +397,7 @@ class Some(Option[T]):
         """
         return self._value
 
-    def filter(self, predicate: t.Callable[[T], bool]) -> _Option[T]:
+    def filter(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
 
         If `self` is `Some`, call `predicate` with the wrapped value and
@@ -423,7 +423,7 @@ class Some(Option[T]):
         """Return an iterator over the possibly contained value."""
         return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> _Option[U]:
+    def map(self, fn: t.Callable[[T], U]) -> Option[U]:
         """Apply `fn` to the contained value if any."""
         return Some(fn(self._value))
 
@@ -442,7 +442,7 @@ class Some(Option[T]):
 
         Maps `Some(v)` to `Ok(v)` or `None` to `Err(err)`.
         """
-        res: Result[T, E] = Ok(t.cast(T, self._value))
+        res: Result[T, E] = Ok(self._value)
         return res
 
     def ok_or_else(self, err_fn: t.Callable[[], E]) -> Result[T, E]:
@@ -450,7 +450,7 @@ class Some(Option[T]):
 
         Maps `Some(v)` to `Ok(v)` or `None` to `Err(err_fn())`.
         """
-        res: Result[T, E] = Ok(t.cast(T, self._value))
+        res: Result[T, E] = Ok(self._value)
         return res
 
     def unwrap(self) -> T:
@@ -515,27 +515,27 @@ class Nothing(Option[T]):
             cls._instance = inst
         return t.cast("Nothing[T]", cls._instance)
 
-    def and_(self, alternative: _Option[U]) -> _Option[U]:
+    def and_(self, alternative: Option[U]) -> Option[U]:
         """Return `Nothing` if `self` is `Nothing`, or the `alternative`."""
-        return t.cast(_Option[U], self)
+        return t.cast(Option[U], self)
 
-    def or_(self, alternative: _Option[T]) -> _Option[T]:
+    def or_(self, alternative: Option[T]) -> Option[T]:
         """Return option if it is `Some`, or the `alternative`."""
         return alternative
 
-    def xor(self, alternative: _Option[T]) -> _Option[T]:
+    def xor(self, alternative: Option[T]) -> Option[T]:
         """Return Some IFF exactly one of `self`, `alternative` is `Some`."""
         return alternative if alternative.is_some() else self
 
-    def and_then(self, fn: t.Callable[[T], _Option[U]]) -> _Option[U]:
+    def and_then(self, fn: t.Callable[[T], Option[U]]) -> Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
-        return t.cast(_Option[U], self)
+        return t.cast(Option[U], self)
 
-    def flatmap(self, fn: t.Callable[[T], "_Option[U]"]) -> "_Option[U]":
+    def flatmap(self, fn: t.Callable[[T], Option[U]]) -> Option[U]:
         """Return `Nothing`, or call `fn` with the `Some` value."""
-        return self.and_then(fn)
+        return t.cast(Option[U], self.and_then(fn))
 
-    def or_else(self, fn: t.Callable[[], _Option[T]]) -> _Option[T]:
+    def or_else(self, fn: t.Callable[[], Option[T]]) -> Option[T]:
         """Return option if it is `Some`, or calculate an alternative."""
         return fn()
 
@@ -547,7 +547,7 @@ class Nothing(Option[T]):
         """
         raise exc_cls(msg)
 
-    def filter(self, predicate: t.Callable[[T], bool]) -> _Option[T]:
+    def filter(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
 
         If `self` is `Some`, call `predicate` with the wrapped value and
@@ -571,9 +571,9 @@ class Nothing(Option[T]):
         """Return an iterator over the possibly contained value."""
         return iter(self)
 
-    def map(self, fn: t.Callable[[T], U]) -> _Option[U]:
+    def map(self, fn: t.Callable[[T], U]) -> Option[U]:
         """Apply `fn` to the contained value if any."""
-        return t.cast(_Option[U], self)
+        return t.cast(Option[U], self)
 
     def map_or(self, default: U, fn: t.Callable[[T], U]) -> U:
         """Apply `fn` to contained value, or return the default."""
