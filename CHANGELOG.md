@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2019-05-19
+
+### Fixed
+
+- All interface methods now, through the magic of dependent imports, specify
+  that they should return implementation instances. This makes working with
+  functions specified to return a `Result` or an `Option` much easier (1780999)
+
 ## [1.0.0] - 2019-05-19
 
 ### Added
@@ -23,3 +31,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/mplanchard/safetywrap/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/mplanchard/safetywrap/compare/f87fa5b1a00af5ef26213e576730039d87f7163b...v1.0.0
+[1.0.1]: https://github.com/mplanchard/safetywrap/compare/v1.0.0...v1.0.1
