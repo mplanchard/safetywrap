@@ -124,11 +124,6 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
         - [Result.unwrap_or](#resultunwrap_or)
         - [Result.unwrap_or_else](#resultunwrap_or_else)
       - [Result Magic Methods](#result-magic-methods)
-        - [Result.__iter__](#result__iter__)
-        - [Result.__eq__](#result__eq__)
-        - [Result.__ne__](#result__ne__)
-        - [Result.__str__](#result__str__)
-        - [Result.__repr__](#result__repr__)
     - [Option[T]](#optiont)
       - [Option Constructors](#option-constructors)
         - [Some](#some)
@@ -157,11 +152,6 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
         - [Option.unwrap_or](#optionunwrap_or)
         - [Option.unwrap_or_else](#optionunwrap_or_else)
       - [Option Magic Methods](#option-magic-methods)
-        - [Option.__iter__](#option__iter__)
-        - [Option.__eq__](#option__eq__)
-        - [Option.__ne__](#option__ne__)
-        - [Option.__str__](#option__str__)
-        - [Option.__repr__](#option__repr__)
   - [Performance](#performance)
     - [Results](#results)
     - [Discussion](#discussion)
@@ -672,7 +662,7 @@ assert Err(1).unwrap_or_else(str) == "1"
 
 #### Result Magic Methods
 
-##### Result.__iter__
+##### Result.__iter__  <!-- omit in toc -->
 
 `Result.__iter__(self) -> t.Iterator[T]`
 
@@ -704,7 +694,7 @@ for val in Err(1):
 assert val is None
 ```
 
-##### Result.__eq__
+##### Result.__eq__ <!-- omit in toc -->
 
 `Result.__eq__(self, other: Any) -> bool`
 
@@ -722,7 +712,7 @@ assert (Ok(5) == Err(5)) is False
 assert (Ok(5) == 5) is False
 ```
 
-##### Result.__ne__
+##### Result.__ne__ <!-- omit in toc -->
 
 `Result.__ne__(self, other: Any) -> bool`
 
@@ -740,7 +730,7 @@ assert (Ok(5) != Err(5)) is True
 assert (Ok(5) != 5) is True
 ```
 
-##### Result.__str__
+##### Result.__str__ <!-- omit in toc -->
 
 `Result.__str__(self) -> str`
 
@@ -753,7 +743,7 @@ assert str(Ok(5)) == "Ok(5)"
 assert str(Err(5)) == "Err(5)"
 ```
 
-##### Result.__repr__
+##### Result.__repr__ <!-- omit in toc -->
 
 `Result.__repr__(self) -> str`
 
@@ -1183,7 +1173,7 @@ assert Nothing().unwrap_or_else(date.today) == date.today()
 
 #### Option Magic Methods
 
-##### Option.__iter__
+##### Option.__iter__ <!-- omit in toc -->
 
 `Option.__iter__(self) -> t.Iterator[T]`
 
@@ -1215,7 +1205,7 @@ for val in Nothing():
 assert val is None
 ```
 
-##### Option.__eq__
+##### Option.__eq__ <!-- omit in toc -->
 
 `Option.__eq__(self, other: Any) -> bool`
 
@@ -1233,7 +1223,7 @@ assert (Some(1) == Nothing()) is False
 assert (Some(1) == 1) is False
 ```
 
-##### Option.__ne__
+##### Option.__ne__ <!-- omit in toc -->
 
 `Option.__ne__(self, other: Any) -> bool`
 
@@ -1251,7 +1241,7 @@ assert (Some(1) != Nothing()) is True
 assert (Some(1) != 1) is True
 ```
 
-##### Option.__str__
+##### Option.__str__ <!-- omit in toc -->
 
 `Option.__str__(self) -> str`
 
@@ -1264,7 +1254,7 @@ assert str(Some(1)) == "Some(1)"
 assert str(Nothing()) == "Nothing()"
 ```
 
-##### Option.__repr__
+##### Option.__repr__ <!-- omit in toc -->
 
 `Option.__repr__(self) -> str`
 
