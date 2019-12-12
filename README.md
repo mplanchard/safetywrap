@@ -95,7 +95,7 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
     - [Get an enum member by its value, returning the member or None](#get-an-enum-member-by-its-value-returning-the-member-or-none)
     - [Get an enum member by its value, returning an Option](#get-an-enum-member-by-its-value-returning-an-option)
     - [Serialize a dict that may be missing keys, using default values](#serialize-a-dict-that-may-be-missing-keys-using-default-values)
-    - [Make an HTTP request, and if the status code is 200, convert the body to JSON and return the `data` key. If there is an error or the `data` key does not exist, return an error string](#make-an-http-request-and-if-the-status-code-is-200-convert-the-body-to-json-and-return-the-data-key-if-there-is-an-error-or-the-data-key-does-not-exist-return-an-error-string)
+    - [Make an HTTP request, and if the status code is 200, convert the body to JSON and return the data key. If there is an error or the data key does not exist, return an error string](#make-an-http-request-and-if-the-status-code-is-200-convert-the-body-to-json-and-return-the-data-key-if-there-is-an-error-or-the-data-key-does-not-exist-return-an-error-string)
   - [Usage](#usage)
     - [Result[T, E]](#resultt-e)
       - [Result Constructors](#result-constructors)
@@ -323,6 +323,12 @@ The type of `E` MUST be `Exception` or one of its subclasses.
 
 This constructor is designed to be useful in wrapping other APIs, builtin
 functions, etc.
+
+Note that due to a bug in mypy (see https://github.com/python/mypy/issues/3737),
+sometimes you need to explicitly specify the `catch` keyword argument,
+even if you're setting it to its default (`Exception`). This does not
+happen consistently, but when it does, you will see mypy thinking
+that the type of the `Result` is `Result[SomeType, <nothing>]`.
 
 Example:
 
