@@ -1,7 +1,7 @@
 """Typesafe python versions of Rust-inspired result types."""
 
 __all__ = ("Option", "Result", "Ok", "Err", "Some", "Nothing")
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __version_info__ = tuple(map(int, __version__.split(".")))
 
 
