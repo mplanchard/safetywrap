@@ -3,7 +3,7 @@
 import typing as t
 from hashlib import sha256
 
-from safetywrap import Option, Some, Nothing
+from safetywrap import Option
 
 
 # ######################################################################
