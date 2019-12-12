@@ -153,7 +153,7 @@ class Ok(Result[T, E]):
         The raised exception class may be specified with the `exc_cls`
         keyword argument.
         """
-        raise exc_cls(msg)
+        raise exc_cls(f"{msg}: {self._value}")
 
     def is_err(self) -> bool:
         """Returl whether the result is an Err."""
@@ -272,7 +272,7 @@ class Err(Result[T, E]):
         The raised exception class may be specified with the `exc_cls`
         keyword argument.
         """
-        raise exc_cls(msg)
+        raise exc_cls(f"{msg}: {self._value}")
 
     def expect_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError

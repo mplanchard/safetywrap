@@ -102,6 +102,9 @@ class _Result(t.Generic[T, E]):
 
         The raised exception class may be specified with the `exc_cls`
         keyword argument.
+
+        The underlying error will be stringified and appended to the
+        provided message.
         """
         raise NotImplementedError
 
@@ -112,6 +115,9 @@ class _Result(t.Generic[T, E]):
 
         The raised exception class may be specified with the `exc_cls`
         keyword argument.
+
+        The underlying result will be stringified and appended to the
+        provided message.
         """
         raise NotImplementedError
 
