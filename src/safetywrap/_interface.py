@@ -50,6 +50,19 @@ class _Result(t.Generic[T, E]):
         raise NotImplementedError
 
     @staticmethod
+    def collect(
+        iterable: t.Iterable["Result[T, E]"],
+    ) -> "Result[t.Tuple[T, ...], E]":
+        """Convert an iterable of Results into a Result of an iterable.
+
+        Given some iterable of type Iterable[Result[T, E]], try to collect
+        all Ok values into a tuple of type Tuple[T, ...]. If any of the
+        iterable items are Errs, short-circuit and return Err of type
+        Result[E].
+        """
+        raise NotImplementedError
+
+    @staticmethod
     def err_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
         """Return Err(val) if predicate(val) is True, otherwise Ok(val)."""
         raise NotImplementedError

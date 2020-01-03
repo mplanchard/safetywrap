@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Result.collect(iterable: Iterable[T, E]) -> Result[Tuple[T, ...], E]`  added
+  to collect an iterable of results into a single result, short-circuiting
+  if any errors are encountered
+
 ## [1.0.2] - 2019-12-12
 
 ### Fixed

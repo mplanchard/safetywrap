@@ -52,6 +52,35 @@ class TestResultConstructors:
         assert Result.of(foo, 1, b="a").unwrap() == "a"
 
     @pytest.mark.parametrize(
+        "iterable, exp",
+        (
+            ((Ok(1), Ok(2), Ok(3)), Ok((1, 2, 3))),
+            ((Ok(1), Err("no"), Ok(3)), Err("no")),
+            (iter([Ok(1), Ok(2)]), Ok((1, 2))),
+            ([Err("no")], Err("no")),
+            ([Ok(1)], Ok((1,))),
+            ([], Ok(())),
+        ),
+    )
+    def test_collect(
+        self, iterable: t.Iterable[Result[int, str]], exp: Result[int, str]
+    ) -> None:
+        """Test collecting an iterable of results into a single result."""
+        assert Result.collect(iterable) == exp
+
+    def test_collect_short_circuits(self) -> None:
+        """Ensure collect does not iterate after an err is reached."""
+        until_err: t.List[Result[int, str]] = [Ok(1), Ok(2), Err("no")]
+
+        def _iterable() -> t.Iterable[Result[int, str]]:
+            yield from until_err
+            # If we continue iterating after the err, we will raise a
+            # runtime Error.
+            assert False, "Result.collect() did not short circuit on err!"
+
+        assert Result.collect(_iterable()) == Err("no")
+
+    @pytest.mark.parametrize(
         "predicate, val, exp",
         (
             (lambda x: x is True, True, Ok(True)),

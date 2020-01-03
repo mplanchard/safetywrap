@@ -1,15 +1,17 @@
 VENV = . ./venv/bin/activate;
+PKG_DIR = src
+TEST_DIR = tests
+LINE_LENGTH = 80
+SRC_FILES = *.py $(PKG_DIR) $(TEST_DIR)
 TEST = pytest \
 	--cov-config=setup.cfg \
 	--cov-report=xml:.coverage.xml \
 	--cov-report=term \
 	--cov=safetywrap \
+	--doctest-modules \
 	--junit-xml=.pytest.xml \
-	tests
-LINE_LENGTH = 80
-PKG_DIR = src
-TEST_DIR = tests
-SRC_FILES = *.py $(PKG_DIR) $(TEST_DIR)
+	$(PKG_DIR) \
+	$(TEST_DIR)
 
 .PHONY: bench build clean distribute fmt lint test
 

@@ -42,8 +42,39 @@ class Result(_Result[T, E]):
         """
         try:
             return Ok(fn(*args, **kwargs))
-        except catch as exc:
+        except catch as exc:  # pylint: disable=broad-except
             return Err(exc)
+
+    @staticmethod
+    def collect(
+        iterable: t.Iterable["Result[T, E]"],
+    ) -> "Result[t.Tuple[T, ...], E]":
+        """Collect an iterable of Results into a Result of an iterable.
+
+        Given some iterable of type Iterable[Result[T, E]], try to collect
+        all Ok values into a tuple of type Tuple[T, ...]. If any of the
+        iterable items are Errs, short-circuit and return Err of type
+        Result[E].
+
+        Example:
+        ```py
+
+        >>> assert Result.collect([Ok(1), Ok(2), Ok(3)]) == Ok((1, 2, 3))
+        >>> assert Result.collect([Ok(1), Err("no"), Ok(3)]) == Err("no")
+
+        ```
+
+        Note that in order to satisfy the type checker, you'll probably
+        need to use this in a context where the type of the result is
+        hinted, either by a variable annotation or a return type.
+        """
+        # Non-functional code here to enable true short-circuiting.
+        ok_vals: t.Tuple[T, ...] = ()
+        for result in iterable:
+            if result.is_err():
+                return result.map(lambda _: ())
+            ok_vals += (result.unwrap(),)
+        return Ok(ok_vals)
 
     @staticmethod
     def err_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":

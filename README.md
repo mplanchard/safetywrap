@@ -102,6 +102,7 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
         - [Ok](#ok)
         - [Err](#err)
         - [Result.of](#resultof)
+        - [Result.collect](#resultcollect)
         - [Result.err_if](#resulterr_if)
         - [Result.ok_if](#resultok_if)
       - [Result Methods](#result-methods)
@@ -338,6 +339,21 @@ import json
 def parse_json(string: str) -> Result[dict, Exception]:
     """Parse a JSON object into a dict."""
     return Result.of(json.loads, string)
+```
+
+##### Result.collect
+
+`Result.collect(iterable: Iterable[T, E]) -> Result[Tuple[T, ...], E]`
+
+Convert an iterable of Results into a single Result. If all Results were
+Ok, Ok values are collected into a Tuple in the final Result. If any Results
+were Err, the Err result is returned directly.
+
+Example:
+
+```py
+assert Result.collect([Ok(1), Ok(2), Ok(3)]) == Ok((1, 2, 3))
+assert Result.collect([Ok(1), Err("no"), Ok(3)]) == Err("no")
 ```
 
 ##### Result.err_if
