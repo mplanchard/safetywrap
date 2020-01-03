@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2019-01-03
+
 ### Added
 
 - `Result.collect(iterable: Iterable[T, E]) -> Result[Tuple[T, ...], E]`  added
@@ -42,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic benchmarks for analyzing performance
 - Apache license
 
-[Unreleased]: https://github.com/mplanchard/safetywrap/compare/v1.0.2...HEAD
-[1.0.0]: https://github.com/mplanchard/safetywrap/compare/f87fa5b1a00af5ef26213e576730039d87f7163b...v1.0.0
-[1.0.1]: https://github.com/mplanchard/safetywrap/compare/v1.0.0...v1.0.1
+[Unreleased]: https://github.com/mplanchard/safetywrap/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/mplanchard/safetywrap/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/mplanchard/safetywrap/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/mplanchard/safetywrap/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/mplanchard/safetywrap/compare/f87fa5b1a00af5ef26213e576730039d87f7163b...v1.0.0
