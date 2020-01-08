@@ -201,9 +201,25 @@ class TestResult:
 
         assert msg in str(exc_info.value)
 
+    @pytest.mark.parametrize("exc_cls", (None, IOError))
+    def test_raise_if_err_raising(self, exc_cls: t.Type[Exception]) -> None:
+        """Test raise_if_err for Err() values."""
+        exp_exc = exc_cls if exc_cls else RuntimeError
+        kwargs = {"exc_cls": exc_cls} if exc_cls else {}
+        msg = "not what I expected"
+
+        with pytest.raises(exp_exc) as exc_info:
+            Err(2).raise_if_err(msg, **kwargs)
+
+        assert msg in str(exc_info.value)
+
     def test_expect_ok(self) -> None:
         """Expecting an Ok() value returns the value."""
         assert Ok(2).expect("err") == 2
+
+    def test_raise_if_err_ok(self) -> None:
+        """Raise_if_err returns the value when given an Ok() value."""
+        assert Ok(2).raise_if_err("err") == 2
 
     @pytest.mark.parametrize("exc_cls", (None, IOError))
     def test_expect_err_raising(self, exc_cls: t.Type[Exception]) -> None:

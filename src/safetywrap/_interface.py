@@ -121,6 +121,21 @@ class _Result(t.Generic[T, E]):
         """
         raise NotImplementedError
 
+    def raise_if_err(
+        self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
+    ) -> T:
+        """Return `Ok` value or raise an error with the specified message.
+
+        The raised exception class may be specified with the `exc_cls`
+        keyword argument.
+
+        The underlying error will be stringified and appended to the
+        provided message.
+
+        Alias of `expect`.
+        """
+        raise NotImplementedError
+
     def expect_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
     ) -> E:
