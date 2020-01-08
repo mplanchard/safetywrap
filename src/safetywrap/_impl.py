@@ -452,6 +452,18 @@ class Some(Option[T]):
         """
         return self._value
 
+    def raise_if_err(
+        self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
+    ) -> T:
+        """Unwrap and yield a `Some`, or throw an exception if `Nothing`.
+
+        The exception class may be specified with the `exc_cls` keyword
+        argument.
+
+        Alias of `Some.expect`.
+        """
+        return self.expect(msg, exc_cls)
+
     def filter(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
 
@@ -601,6 +613,18 @@ class Nothing(Option[T]):
         argument.
         """
         raise exc_cls(msg)
+
+    def raise_if_err(
+        self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
+    ) -> T:
+        """Unwrap and yield a `Some`, or throw an exception if `Nothing`.
+
+        The exception class may be specified with the `exc_cls` keyword
+        argument.
+
+        Alias of `Nothing.expect`.
+        """
+        return self.expect(msg, exc_cls)
 
     def filter(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
