@@ -503,8 +503,9 @@ assert Err(1).ok() == Nothing()
 `Result.expect(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
 
 Return the wrapped value if this Result is `Ok`. Otherwise, raise an error,
-instantiated with the provided message. By default, a `RuntimeError` is raised,
-but an alternative error may be provided using the `exc_cls` keyword argument.
+instantiated with the provided message and the stringified error value.
+By default, a `RuntimeError` is raised, but an alternative error may be
+provided using the `exc_cls` keyword argument.
 
 Example:
 
@@ -512,10 +513,10 @@ Example:
 import pytest
 
 with pytest.raises(RuntimeError) as exc:
-    Err(5).expect("5 is right out!")
-    assert str(exc.value) == "5 is right out!"
+    Err(5).expect("Bad value")
+    assert str(exc.value) == "Bad value: 5"
 
-assert Ok(1).expect("5 is right out") == 1
+assert Ok(1).expect("Bad value") == 1
 ```
 
 ##### Result.expect_err
@@ -523,8 +524,9 @@ assert Ok(1).expect("5 is right out") == 1
 `Result.expect_err(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> E`
 
 Return the wrapped value if this Result is `Err`. Otherwise, raise an error,
-instantiated with the provided message. By default, a `RuntimeError` is raised,
-but an alternative error may be provided using the `exc_cls` keyword argument.
+instantiated with the provided message and the stringified Ok value.
+By default, a `RuntimeError` is raised, but an alternative error may be
+provided using the `exc_cls` keyword argument.
 
 Example:
 
@@ -532,10 +534,10 @@ Example:
 import pytest
 
 with pytest.raises(RuntimeError) as exc:
-    Ok(5).expect_err("5 is right out!")
-    assert str(exc.value) == "5 is right out!"
+    Ok(5).expect_err("Unexpected good value")
+    assert str(exc.value) == "Unexpected good value: 5"
 
-assert Err(1).expect_err("5 is right out") == 1
+assert Err(1).expect_err("Unexpected good value") == 1
 ```
 
 ##### Result.is_err
