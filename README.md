@@ -114,6 +114,7 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
         - [Result.err](#resulterr)
         - [Result.ok](#resultok)
         - [Result.expect](#resultexpect)
+        - [Result.raise_if_err](#resultraise_if_err)
         - [Result.expect_err](#resultexpect_err)
         - [Result.is_err](#resultis_err)
         - [Result.is_ok](#resultis_ok)
@@ -140,6 +141,7 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
         - [Option.flatmap](#optionflatmap)
         - [Option.or_else](#optionor_else)
         - [Option.expect](#optionexpect)
+        - [Option.raise_if_err](#optionraise_if_err)
         - [Option.filter](#optionfilter)
         - [Option.is_nothing](#optionis_nothing)
         - [Option.is_some](#optionis_some)
@@ -430,7 +432,7 @@ assert Ok(5).or_(Err(1)) == Ok(5)
 If this Result is `Ok`, call the provided function with the wrapped value of
 this Result and return the Result of that function. This allows easily
 chaining multiple Result-generating calls together to yield a final
-Result. This method is an alias of [`flatmap`](#resultflatmap)
+Result. This method is an alias of [`Result.flatmap`](#resultflatmap)
 
 Example:
 
@@ -446,7 +448,7 @@ assert Err(1).and_then(lambda val: Ok(val + 1)) == Err(1)
 If this Result is `Ok`, call the provided function with the wrapped value of
 this Result and return the Result of that function. This allows easily
 chaining multiple Result-generating calls together to yield a final
-Result. This method is an alias of [`and_then`](#result.and_then)
+Result. This method is an alias of [`Result.and_then`](#resultand_then)
 
 Example:
 
@@ -505,7 +507,8 @@ assert Err(1).ok() == Nothing()
 Return the wrapped value if this Result is `Ok`. Otherwise, raise an error,
 instantiated with the provided message and the stringified error value.
 By default, a `RuntimeError` is raised, but an alternative error may be
-provided using the `exc_cls` keyword argument.
+provided using the `exc_cls` keyword argument. This method is an alias for
+[`Result.raise_if_err`](#resultraise_if_err).
 
 Example:
 
@@ -517,6 +520,28 @@ with pytest.raises(RuntimeError) as exc:
     assert str(exc.value) == "Bad value: 5"
 
 assert Ok(1).expect("Bad value") == 1
+```
+
+##### Result.raise_if_err
+
+`Result.raise_if_err(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
+
+Return the wrapped value if this Result is `Ok`. Otherwise, raise an error,
+instantiated with the provided message and the stringified error value.
+By default, a `RuntimeError` is raised, but an alternative error may be
+provided using the `exc_cls` keyword argument. This method is an alias for
+[`Result.expect`](#resultexpect).
+
+Example:
+
+```py
+import pytest
+
+with pytest.raises(RuntimeError) as exc:
+    Err(5).raise_if_err("Bad value")
+    assert str(exc.value) == "Bad value: 5"
+
+assert Ok(1).raise_if_err("Bad value") == 1
 ```
 
 ##### Result.expect_err
@@ -979,7 +1004,8 @@ assert Some(1).or_else(lambda: Some(2)) == Some(1)
 If this Option is `Some`, return the wrapped value. Otherwise, if this
 Option is `Nothing`, raise an error instantiated with the provided message.
 By default, a `RuntimeError` is raised, but a custom exception class may be
-provided via the `exc_cls` keyword argument.
+provided via the `exc_cls` keyword argument. This method is an alias 
+of [`Option.raise_if_err`](#optionraise_if_err).
 
 Example:
 
@@ -991,6 +1017,28 @@ with pytest.raises(RuntimeError) as exc:
     assert str(exc.value) == "Nothing here"
 
 assert Some(1).expect("Nothing here") == 1
+```
+
+##### Option.raise_if_err
+
+`Option.raise_if_err(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
+
+If this Option is `Some`, return the wrapped value. Otherwise, if this
+Option is `Nothing`, raise an error instantiated with the provided message.
+By default, a `RuntimeError` is raised, but a custom exception class may be
+provided via the `exc_cls` keyword argument. This method is an alias 
+of [`Option.expect`](#optionexpect).
+
+Example:
+
+```py
+import pytest
+
+with pytest.raises(RuntimeError) as exc:
+    Nothing().raise_if_err("Nothing here")
+    assert str(exc.value) == "Nothing here"
+
+assert Some(1).raise_if_err("Nothing here") == 1
 ```
 
 ##### Option.filter

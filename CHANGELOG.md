@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Result.raise_if_err(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
+  added as a semantically friendly alias for `Result.expect`.
+- `Option.raise_if_err(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
+  added as a semantically friendly alias for `Option.expect`.
+
 ## [1.1.0] - 2019-01-03
 
 ### Added
