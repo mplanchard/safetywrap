@@ -327,7 +327,7 @@ class Err(Result[T, E]):
 
         Alias for `Err.expect`.
         """
-        return self.expect(msg, exc_cls)
+        return self.expect(msg, exc_cls=exc_cls)
 
     def expect_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
@@ -462,7 +462,7 @@ class Some(Option[T]):
 
         Alias of `Some.expect`.
         """
-        return self.expect(msg, exc_cls)
+        return self.expect(msg, exc_cls=exc_cls)
 
     def filter(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
@@ -624,7 +624,7 @@ class Nothing(Option[T]):
 
         Alias of `Nothing.expect`.
         """
-        return self.expect(msg, exc_cls)
+        return self.expect(msg, exc_cls=exc_cls)
 
     def filter(self, predicate: t.Callable[[T], bool]) -> Option[T]:
         """Return `Nothing`, or an option determined by the predicate.
