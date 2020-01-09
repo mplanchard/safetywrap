@@ -448,7 +448,7 @@ assert Err(1).and_then(lambda val: Ok(val + 1)) == Err(1)
 If this Result is `Ok`, call the provided function with the wrapped value of
 this Result and return the Result of that function. This allows easily
 chaining multiple Result-generating calls together to yield a final
-Result. This method is an alias of [`Result.and_then`](#result.and_then)
+Result. This method is an alias of [`Result.and_then`](#resultand_then)
 
 Example:
 
@@ -1004,7 +1004,8 @@ assert Some(1).or_else(lambda: Some(2)) == Some(1)
 If this Option is `Some`, return the wrapped value. Otherwise, if this
 Option is `Nothing`, raise an error instantiated with the provided message.
 By default, a `RuntimeError` is raised, but a custom exception class may be
-provided via the `exc_cls` keyword argument. This method is an alias of [`Option.raise_if_err`](#optionraise_if_err).
+provided via the `exc_cls` keyword argument. This method is an alias 
+of [`Option.raise_if_err`](#optionraise_if_err).
 
 Example:
 
@@ -1025,7 +1026,8 @@ assert Some(1).expect("Nothing here") == 1
 If this Option is `Some`, return the wrapped value. Otherwise, if this
 Option is `Nothing`, raise an error instantiated with the provided message.
 By default, a `RuntimeError` is raised, but a custom exception class may be
-provided via the `exc_cls` keyword argument. This method is an alias of [`Option.expect`](#optionexpect).
+provided via the `exc_cls` keyword argument. This method is an alias 
+of [`Option.expect`](#optionexpect).
 
 Example:
 

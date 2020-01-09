@@ -186,7 +186,7 @@ class Ok(Result[T, E]):
 
         Alias for `Ok.expect`.
         """
-        return self.expect(msg, exc_cls)
+        return self.expect(msg, exc_cls=exc_cls)
 
     def expect_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError

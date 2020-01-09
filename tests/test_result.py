@@ -212,6 +212,7 @@ class TestResult:
             Err(2).raise_if_err(msg, **kwargs)
 
         assert msg in str(exc_info.value)
+        assert "2" in str(exc_info.value)
 
     def test_expect_ok(self) -> None:
         """Expecting an Ok() value returns the value."""
