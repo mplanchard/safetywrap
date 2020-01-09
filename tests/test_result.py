@@ -194,25 +194,28 @@ class TestResult:
         """Test expecting a value to be Ok()."""
         exp_exc = exc_cls if exc_cls else RuntimeError
         kwargs = {"exc_cls": exc_cls} if exc_cls else {}
+        input_val = 2
         msg = "not what I expected"
 
         with pytest.raises(exp_exc) as exc_info:
-            Err(2).expect(msg, **kwargs)
+            Err(input_val).expect(msg, **kwargs)
 
         assert msg in str(exc_info.value)
+        assert str(input_val) in str(exc_info.value)
 
     @pytest.mark.parametrize("exc_cls", (None, IOError))
     def test_raise_if_err_raising(self, exc_cls: t.Type[Exception]) -> None:
         """Test raise_if_err for Err() values."""
         exp_exc = exc_cls if exc_cls else RuntimeError
         kwargs = {"exc_cls": exc_cls} if exc_cls else {}
+        input_val = 2
         msg = "not what I expected"
 
         with pytest.raises(exp_exc) as exc_info:
-            Err(2).raise_if_err(msg, **kwargs)
+            Err(input_val).raise_if_err(msg, **kwargs)
 
         assert msg in str(exc_info.value)
-        assert "2" in str(exc_info.value)
+        assert str(input_val) in str(exc_info.value)
 
     def test_expect_ok(self) -> None:
         """Expecting an Ok() value returns the value."""
