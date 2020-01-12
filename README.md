@@ -95,7 +95,7 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
     - [Get an enum member by its value, returning the member or None](#get-an-enum-member-by-its-value-returning-the-member-or-none)
     - [Get an enum member by its value, returning an Option](#get-an-enum-member-by-its-value-returning-an-option)
     - [Serialize a dict that may be missing keys, using default values](#serialize-a-dict-that-may-be-missing-keys-using-default-values)
-    - [Make an HTTP request, and if the status code is 200, convert the body to JSON and return the data key. If there is an error or the data key does not exist, return an error string](#make-an-http-request-and-if-the-status-code-is-200-convert-the-body-to-json-and-return-the-data-key-if-there-is-an-error-or-the-data-key-does-not-exist-return-an-error-string)
+    - [Make an HTTP request, and if the status code is 200, convert the body to JSON and return the `data` key. If there is an error or the `data` key does not exist, return an error string](#make-an-http-request-and-if-the-status-code-is-200-convert-the-body-to-json-and-return-the-data-key-if-there-is-an-error-or-the-data-key-does-not-exist-return-an-error-string)
   - [Usage](#usage)
     - [Result[T, E]](#resultt-e)
       - [Result Constructors](#result-constructors)
@@ -103,57 +103,57 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
         - [Err](#err)
         - [Result.of](#resultof)
         - [Result.collect](#resultcollect)
-        - [Result.err_if](#resulterr_if)
-        - [Result.ok_if](#resultok_if)
+        - [Result.err_if](#resulterrif)
+        - [Result.ok_if](#resultokif)
       - [Result Methods](#result-methods)
-        - [Result.and_](#resultand_)
-        - [Result.or_](#resultor_)
-        - [Result.and_then](#resultand_then)
+        - [Result.and_](#resultand)
+        - [Result.or_](#resultor)
+        - [Result.and_then](#resultandthen)
         - [Result.flatmap](#resultflatmap)
-        - [Result.or_else](#resultor_else)
+        - [Result.or_else](#resultorelse)
         - [Result.err](#resulterr)
         - [Result.ok](#resultok)
         - [Result.expect](#resultexpect)
-        - [Result.raise_if_err](#resultraise_if_err)
-        - [Result.expect_err](#resultexpect_err)
-        - [Result.is_err](#resultis_err)
-        - [Result.is_ok](#resultis_ok)
+        - [Result.raise_if_err](#resultraiseiferr)
+        - [Result.expect_err](#resultexpecterr)
+        - [Result.is_err](#resultiserr)
+        - [Result.is_ok](#resultisok)
         - [Result.iter](#resultiter)
         - [Result.map](#resultmap)
-        - [Result.map_err](#resultmap_err)
+        - [Result.map_err](#resultmaperr)
         - [Result.unwrap](#resultunwrap)
-        - [Result.unwrap_err](#resultunwrap_err)
-        - [Result.unwrap_or](#resultunwrap_or)
-        - [Result.unwrap_or_else](#resultunwrap_or_else)
+        - [Result.unwrap_err](#resultunwraperr)
+        - [Result.unwrap_or](#resultunwrapor)
+        - [Result.unwrap_or_else](#resultunwraporelse)
       - [Result Magic Methods](#result-magic-methods)
     - [Option[T]](#optiont)
       - [Option Constructors](#option-constructors)
         - [Some](#some)
         - [Nothing](#nothing)
         - [Option.of](#optionof)
-        - [Option.nothing_if](#optionnothing_if)
-        - [Option.some_if](#optionsome_if)
+        - [Option.nothing_if](#optionnothingif)
+        - [Option.some_if](#optionsomeif)
       - [Option Methods](#option-methods)
-        - [Option.and_](#optionand_)
-        - [Option.or_](#optionor_)
+        - [Option.and_](#optionand)
+        - [Option.or_](#optionor)
         - [Option.xor](#optionxor)
-        - [Option.and_then](#optionand_then)
+        - [Option.and_then](#optionandthen)
         - [Option.flatmap](#optionflatmap)
-        - [Option.or_else](#optionor_else)
+        - [Option.or_else](#optionorelse)
         - [Option.expect](#optionexpect)
-        - [Option.raise_if_err](#optionraise_if_err)
+        - [Option.raise_if_nothing](#optionraiseifnothing)
         - [Option.filter](#optionfilter)
-        - [Option.is_nothing](#optionis_nothing)
-        - [Option.is_some](#optionis_some)
+        - [Option.is_nothing](#optionisnothing)
+        - [Option.is_some](#optionissome)
         - [Option.iter](#optioniter)
         - [Option.map](#optionmap)
-        - [Option.map_or](#optionmap_or)
-        - [Option.map_or_else](#optionmap_or_else)
-        - [Option.ok_or](#optionok_or)
-        - [Option.ok_or_else](#optionok_or_else)
+        - [Option.map_or](#optionmapor)
+        - [Option.map_or_else](#optionmaporelse)
+        - [Option.ok_or](#optionokor)
+        - [Option.ok_or_else](#optionokorelse)
         - [Option.unwrap](#optionunwrap)
-        - [Option.unwrap_or](#optionunwrap_or)
-        - [Option.unwrap_or_else](#optionunwrap_or_else)
+        - [Option.unwrap_or](#optionunwrapor)
+        - [Option.unwrap_or_else](#optionunwraporelse)
       - [Option Magic Methods](#option-magic-methods)
   - [Performance](#performance)
     - [Results](#results)
@@ -1004,8 +1004,8 @@ assert Some(1).or_else(lambda: Some(2)) == Some(1)
 If this Option is `Some`, return the wrapped value. Otherwise, if this
 Option is `Nothing`, raise an error instantiated with the provided message.
 By default, a `RuntimeError` is raised, but a custom exception class may be
-provided via the `exc_cls` keyword argument. This method is an alias 
-of [`Option.raise_if_err`](#optionraise_if_err).
+provided via the `exc_cls` keyword argument. This method is an alias
+of [`Option.raise_if_nothing`](#optionraise_if_nothing).
 
 Example:
 
@@ -1019,14 +1019,14 @@ with pytest.raises(RuntimeError) as exc:
 assert Some(1).expect("Nothing here") == 1
 ```
 
-##### Option.raise_if_err
+##### Option.raise_if_nothing
 
-`Option.raise_if_err(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
+`Option.raise_if_nothing(self, msg: str, exc_cls: t.Type[Exception] = RuntimeError) -> T`
 
 If this Option is `Some`, return the wrapped value. Otherwise, if this
 Option is `Nothing`, raise an error instantiated with the provided message.
 By default, a `RuntimeError` is raised, but a custom exception class may be
-provided via the `exc_cls` keyword argument. This method is an alias 
+provided via the `exc_cls` keyword argument. This method is an alias
 of [`Option.expect`](#optionexpect).
 
 Example:
@@ -1035,10 +1035,10 @@ Example:
 import pytest
 
 with pytest.raises(RuntimeError) as exc:
-    Nothing().raise_if_err("Nothing here")
+    Nothing().raise_if_nothing("Nothing here")
     assert str(exc.value) == "Nothing here"
 
-assert Some(1).raise_if_err("Nothing here") == 1
+assert Some(1).raise_if_nothing("Nothing here") == 1
 ```
 
 ##### Option.filter
