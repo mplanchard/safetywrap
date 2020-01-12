@@ -1,6 +1,8 @@
 {
     "editor.formatOnSave": true,
 
+    "markdown.extension.toc.githubCompatibility": true,
+
     "python.formatting.provider": "black",
     "python.formatting.blackArgs": ["--line-length", "80"],
 
