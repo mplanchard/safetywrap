@@ -455,6 +455,20 @@ class Some(Option[T]):
     def raise_if_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
     ) -> T:
+        """DEPRECATED: Use `raise_if_nothing` or `expect`.
+
+        Unwrap and yield a `Some`, or throw an exception if `Nothing`.
+
+        The exception class may be specified with the `exc_cls` keyword
+        argument.
+
+        Alias of `Some.expect`.
+        """
+        return self.expect(msg, exc_cls=exc_cls)
+
+    def raise_if_nothing(
+        self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
+    ) -> T:
         """Unwrap and yield a `Some`, or throw an exception if `Nothing`.
 
         The exception class may be specified with the `exc_cls` keyword
@@ -615,6 +629,20 @@ class Nothing(Option[T]):
         raise exc_cls(msg)
 
     def raise_if_err(
+        self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
+    ) -> T:
+        """DEPRECATED: Use `raise_if_nothing` or `expect`.
+
+        Unwrap and yield a `Some`, or throw an exception if `Nothing`.
+
+        The exception class may be specified with the `exc_cls` keyword
+        argument.
+
+        Alias of `Nothing.expect`.
+        """
+        return self.expect(msg, exc_cls=exc_cls)
+
+    def raise_if_nothing(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
     ) -> T:
         """Unwrap and yield a `Some`, or throw an exception if `Nothing`.

@@ -150,37 +150,29 @@ class TestOption:
         """Chains option-generating functions if results are `None`."""
         assert start.or_else(fn) == exp
 
+    @pytest.mark.parametrize(
+        "method", ("expect", "raise_if_err", "raise_if_nothing")
+    )
     @pytest.mark.parametrize("exc_cls", (None, IOError))
-    def test_expect_raising(self, exc_cls: t.Type[Exception]) -> None:
+    def test_expect_and_aliases_raising(
+        self, method: str, exc_cls: t.Type[Exception]
+    ) -> None:
         """Can specify exception msg/cls if value is not Some()."""
         exp_exc = exc_cls if exc_cls else RuntimeError
         kwargs = {"exc_cls": exc_cls} if exc_cls else {}
         msg = "not what I expected"
 
         with pytest.raises(exp_exc) as exc_info:
-            Nothing().expect(msg, **kwargs)
+            getattr(Nothing(), method)(msg, **kwargs)
 
         assert msg in str(exc_info.value)
 
-    @pytest.mark.parametrize("exc_cls", (None, IOError))
-    def test_raise_if_err_raising(self, exc_cls: t.Type[Exception]) -> None:
-        """Can specify exception msg/cls if value is not Some()."""
-        exp_exc = exc_cls if exc_cls else RuntimeError
-        kwargs = {"exc_cls": exc_cls} if exc_cls else {}
-        msg = "not what I expected"
-
-        with pytest.raises(exp_exc) as exc_info:
-            Nothing().raise_if_err(msg, **kwargs)
-
-        assert msg in str(exc_info.value)
-
-    def test_expect_not_raising(self) -> None:
+    @pytest.mark.parametrize(
+        "method", ("expect", "raise_if_err", "raise_if_nothing")
+    )
+    def test_expect_and_aliases_not_raising(self, method: str) -> None:
         """Expecting on a Some() returns the value."""
-        assert Some("hello").expect("not what I expected") == "hello"
-
-    def test_raise_if_err_not_raising(self) -> None:
-        """raise_if_err on a Some() returns the value."""
-        assert Some("hello").raise_if_err("not what I expected") == "hello"
+        assert getattr(Some("hello"), method)("not what I expected") == "hello"
 
     @pytest.mark.parametrize(
         "start, exp",

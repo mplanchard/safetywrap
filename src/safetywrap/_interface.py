@@ -282,6 +282,20 @@ class _Option(t.Generic[T]):
     def raise_if_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
     ) -> T:
+        """DEPRECATED: Use `raise_if_nothing` or `expect`.
+
+        Unwrap and yield a `Some`, or throw an exception if `Nothing`.
+
+        The exception class may be specified with the `exc_cls` keyword
+        argument.
+
+        Alias of `expect`.
+        """
+        raise NotImplementedError
+
+    def raise_if_nothing(
+        self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
+    ) -> T:
         """Unwrap and yield a `Some`, or throw an exception if `Nothing`.
 
         The exception class may be specified with the `exc_cls` keyword
