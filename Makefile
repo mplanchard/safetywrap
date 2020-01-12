@@ -82,9 +82,9 @@ test-3.7:
 	docker run --rm -it --mount type=bind,source="$(PWD)",target="/src" -w "/src" \
 		python:3.7 bash -c "make clean && pip install -e .[dev] && $(TEST); make clean"
 
-test-3.8-rc:
+test-3.8:
 	docker run --rm -it --mount type=bind,source="$(PWD)",target="/src" -w "/src" \
-		python:3.8-rc bash -c "make clean && pip install -e .[dev] && $(TEST); make clean"
+		python:3.8 bash -c "make clean && pip install -e .[dev] && $(TEST); make clean"
 
 test-all-versions: test-3.6 test-3.7 test-3.8
 
