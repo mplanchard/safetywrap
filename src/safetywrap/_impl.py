@@ -454,7 +454,7 @@ class Some(Option[T]):
 
     def raise_if_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
-    ) -> T:
+    ) -> T:  # noqa: D401
         """DEPRECATED: Use `raise_if_nothing` or `expect`.
 
         Unwrap and yield a `Some`, or throw an exception if `Nothing`.
@@ -630,7 +630,7 @@ class Nothing(Option[T]):
 
     def raise_if_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
-    ) -> T:
+    ) -> T:  # noqa: D401
         """DEPRECATED: Use `raise_if_nothing` or `expect`.
 
         Unwrap and yield a `Some`, or throw an exception if `Nothing`.
