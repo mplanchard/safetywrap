@@ -1,6 +1,7 @@
 """Implementations of Ok, Err, Some, and None."""
 
 import typing as t
+import warnings
 
 from ._interface import _Option, _Result
 
@@ -464,6 +465,11 @@ class Some(Option[T]):
 
         Alias of `Some.expect`.
         """
+        warnings.warn(
+            "Option.raise_if_err() is deprecated. "
+            "Use raise_if_nothing() or expect() instead",
+            DeprecationWarning,
+        )
         return self.expect(msg, exc_cls=exc_cls)
 
     def raise_if_nothing(
@@ -640,6 +646,11 @@ class Nothing(Option[T]):
 
         Alias of `Nothing.expect`.
         """
+        warnings.warn(
+            "Option.raise_if_err() is deprecated. "
+            "Use raise_if_nothing() or expect() instead",
+            DeprecationWarning,
+        )
         return self.expect(msg, exc_cls=exc_cls)
 
     def raise_if_nothing(

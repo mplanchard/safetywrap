@@ -150,9 +150,7 @@ class TestOption:
         """Chains option-generating functions if results are `None`."""
         assert start.or_else(fn) == exp
 
-    @pytest.mark.parametrize(
-        "method", ("expect", "raise_if_err", "raise_if_nothing")
-    )
+    @pytest.mark.parametrize("method", ("expect", "raise_if_nothing"))
     @pytest.mark.parametrize("exc_cls", (None, IOError))
     def test_expect_and_aliases_raising(
         self, method: str, exc_cls: t.Type[Exception]
@@ -167,12 +165,18 @@ class TestOption:
 
         assert msg in str(exc_info.value)
 
-    @pytest.mark.parametrize(
-        "method", ("expect", "raise_if_err", "raise_if_nothing")
-    )
+    @pytest.mark.parametrize("method", ("expect", "raise_if_nothing"))
     def test_expect_and_aliases_not_raising(self, method: str) -> None:
         """Expecting on a Some() returns the value."""
         assert getattr(Some("hello"), method)("not what I expected") == "hello"
+
+    def test_raise_if_err(self) -> None:
+        """This method is deprecated."""
+        with pytest.deprecated_call():
+            assert Some("hello").raise_if_err("error") == "hello"
+        with pytest.deprecated_call():
+            with pytest.raises(RuntimeError):
+                Nothing().raise_if_err("error")
 
     @pytest.mark.parametrize(
         "start, exp",
