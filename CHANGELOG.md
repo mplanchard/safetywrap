@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2020-02-21
+
 ### Fixed
 
 - Fix pylint `assignment-from-no-return` warnings for methods that can only
@@ -72,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic benchmarks for analyzing performance
 - Apache license
 
-[Unreleased]: https://github.com/mplanchard/safetywrap/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/mplanchard/safetywrap/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/mplanchard/safetywrap/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/mplanchard/safetywrap/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mplanchard/safetywrap/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mplanchard/safetywrap/compare/v1.0.2...v1.1.0
