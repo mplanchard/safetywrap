@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix pylint `assignment-from-no-return` warnings for methods that can only
+  raise, seen when pylint can determine whether a value is an Ok/Err or
+  Some/Nothing and you try to e.g. `Err(5).expect("no good")`.
+
 ## [1.3.0] - 2019-01-12
 
 ### Added

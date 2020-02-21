@@ -198,6 +198,10 @@ class Ok(Result[T, E]):
         keyword argument.
         """
         raise exc_cls(f"{msg}: {self._value}")
+        # Hack: pylint will warn that you're assigning from a function
+        # that doesn't return if there isn't at least one return statement
+        # in a function
+        return self._value  # pylint: disable=unreachable
 
     def is_err(self) -> bool:
         """Returl whether the result is an Err."""
@@ -229,6 +233,10 @@ class Ok(Result[T, E]):
     def unwrap_err(self) -> E:
         """Return an Ok result, or throw an error if an Err."""
         raise RuntimeError(f"Tried to unwrap_err {self}!")
+        # Hack: pylint will warn that you're assigning from a function
+        # that doesn't return if there isn't at least one return statement
+        # in a function
+        return self._value  # pylint: disable=unreachable
 
     def unwrap_or(self, alternative: U) -> t.Union[T, U]:
         """Return the `Ok` value, or `alternative` if `self` is `Err`."""
@@ -317,6 +325,10 @@ class Err(Result[T, E]):
         keyword argument.
         """
         raise exc_cls(f"{msg}: {self._value}")
+        # Hack: pylint will warn that you're assigning from a function
+        # that doesn't return if there isn't at least one return statement
+        # in a function
+        return self._value  # pylint: disable=unreachable
 
     def raise_if_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
@@ -366,6 +378,10 @@ class Err(Result[T, E]):
     def unwrap(self) -> T:
         """Return an Ok result, or throw an error if an Err."""
         raise RuntimeError(f"Tried to unwrap {self}!")
+        # Hack: pylint will warn that you're assigning from a function
+        # that doesn't return if there isn't at least one return statement
+        # in a function
+        return self._value  # pylint: disable=unreachable
 
     def unwrap_err(self) -> E:
         """Return an Ok result, or throw an error if an Err."""
@@ -633,6 +649,10 @@ class Nothing(Option[T]):
         argument.
         """
         raise exc_cls(msg)
+        # Hack: pylint will warn that you're assigning from a function
+        # that doesn't return if there isn't at least one return statement
+        # in a function
+        return self._value  # pylint: disable=unreachable
 
     def raise_if_err(
         self, msg: str, exc_cls: t.Type[Exception] = RuntimeError
@@ -722,6 +742,10 @@ class Nothing(Option[T]):
     def unwrap(self) -> T:
         """Return `Some` value, or raise an error."""
         raise RuntimeError("Tried to unwrap Nothing")
+        # Hack: pylint will warn that you're assigning from a function
+        # that doesn't return if there isn't at least one return statement
+        # in a function
+        return self._value  # pylint: disable=unreachable
 
     def unwrap_or(self, default: U) -> t.Union[T, U]:
         """Return the contained value or `default`."""
