@@ -244,7 +244,7 @@ class _Option(t.Generic[T]):
         raise NotImplementedError
 
     @staticmethod
-    def collect(options: t.Iterable["Option[T]"]) -> "Option[t.Tuple[T]]":
+    def collect(options: t.Iterable["Option[T]"]) -> "Option[t.Tuple[T, ...]]":
         """Collect a series of Options into single Option.
 
         If all options are `Some[T]`, the result is `Some[Tuple[T]]`. If
