@@ -905,7 +905,7 @@ assert Option.some_if(bool, []) == Nothing()
 
 Collect a series of Options into single Option.
 
-If all options are `Some[T]`, the result is `Some[Tuple[T]]`. If
+If all options are `Some[T]`, the result is `Some[Tuple[T, ...j]]`. If
 any options are `Nothing`, the result is `Nothing`.
 
 Example:
