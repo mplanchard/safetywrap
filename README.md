@@ -133,6 +133,7 @@ with us, please check out [our careers page](https://hellobestow.com/careers/)!
         - [Option.of](#optionof)
         - [Option.nothing_if](#optionnothing_if)
         - [Option.some_if](#optionsome_if)
+        - [Option.collect](#optioncollect)
       - [Option Methods](#option-methods)
         - [Option.and_](#optionand_)
         - [Option.or_](#optionor_)
@@ -896,6 +897,22 @@ Example:
 ```py
 assert Option.some_if(bool, [1, 2, 3]) == Some([1, 2, 3])
 assert Option.some_if(bool, []) == Nothing()
+```
+
+##### Option.collect
+
+`Option.collect(options: t.Iterable[Option[T]]) -> Option[t.Tuple[T, ...]]`
+
+Collect a series of Options into single Option.
+
+If all options are `Some[T]`, the result is `Some[Tuple[T]]`. If
+any options are `Nothing`, the result is `Nothing`.
+
+Example:
+
+```py
+assert Option.collect([Some(1), Some(2), Some(3)]) == Some((1, 2, 3))
+assert Option.collect([Some(1), Nothing(), Some(3)]) == Nothing()
 ```
 
 #### Option Methods

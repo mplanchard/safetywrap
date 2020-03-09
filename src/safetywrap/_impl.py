@@ -2,6 +2,7 @@
 
 import typing as t
 import warnings
+from functools import reduce
 
 from ._interface import _Option, _Result
 
@@ -121,6 +122,23 @@ class Option(_Option[T]):
         if predicate(value):
             return Some(value)
         return Nothing()
+
+    @staticmethod
+    def collect(options: t.Iterable["Option[T]"]) -> "Option[t.Tuple[T, ...]]":
+        """Collect a series of Options into single Option.
+
+        If all options are `Some[T]`, the result is `Some[Tuple[T]]`. If
+        any options are `Nothing`, the result is `Nothing`.
+        """
+        accumulator: Option[t.Tuple[T, ...]] = Some(())
+        try:
+            return reduce(
+                lambda acc, i: acc.map(lambda somes: (*somes, i.unwrap())),
+                options,
+                accumulator,
+            )
+        except RuntimeError:
+            return Nothing()
 
 
 # pylint: enable=abstract-method

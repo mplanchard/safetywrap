@@ -243,6 +243,15 @@ class _Option(t.Generic[T]):
         """Return Some(val) if predicate(val) is True, else Nothing()."""
         raise NotImplementedError
 
+    @staticmethod
+    def collect(options: t.Iterable["Option[T]"]) -> "Option[t.Tuple[T]]":
+        """Collect a series of Options into single Option.
+
+        If all options are `Some[T]`, the result is `Some[Tuple[T]]`. If
+        any options are `Nothing`, the result is `Nothing`.
+        """
+        raise NotImplementedError
+
     # ------------------------------------------------------------------
     # Methods
     # ------------------------------------------------------------------

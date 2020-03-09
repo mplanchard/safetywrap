@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New `Option.collect` constructor to create an `Option[Tuple[T, ...]]`
+  from an iterable of `Option[T]`. If all Options in the iterator are `Some[T]`,
+  they are collected into a tuple in the resulting `Some`. If any are
+  `Nothing()`, the result is `Nothing()`.
+
 ## [1.3.1] - 2020-02-21
 
 ### Fixed

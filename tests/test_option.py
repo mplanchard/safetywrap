@@ -44,7 +44,7 @@ class TestOptionConstructors:
             (lambda x: x > 0, -2, Nothing()),
         ),
     )
-    def test_ok_if(
+    def test_some_if(
         self, predicate: t.Callable, val: t.Any, exp: Option
     ) -> None:
         """Test constructing based on some predicate."""
@@ -59,11 +59,25 @@ class TestOptionConstructors:
             (lambda x: x > 0, -2, Some(-2)),
         ),
     )
-    def test_err_if(
+    def test_nothing_if(
         self, predicate: t.Callable, val: t.Any, exp: Option
     ) -> None:
         """Test constructing based on some predicate."""
         assert Option.nothing_if(predicate, val) == exp
+
+    @pytest.mark.parametrize(
+        "options, exp",
+        (
+            ([Some(1), Some(2), Some(3)], Some((1, 2, 3))),
+            ([Some(1), Nothing(), Some(3)], Nothing()),
+            ([Nothing()], Nothing()),
+            ([Some(1)], Some((1,))),
+            ((Some(1), Some(2), Some(3)), Some((1, 2, 3))),
+        ),
+    )
+    def test_collect(self, options: t.Iterable[Option], exp: Option) -> None:
+        """Test constructing from an iterable of options."""
+        assert Option.collect(options) == exp
 
 
 class TestOption:
