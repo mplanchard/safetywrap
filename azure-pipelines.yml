@@ -4,42 +4,40 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 strategy:
   matrix:
     Python36:
-      python.version: '3.6'
+      python.version: "3.6"
     Python37:
-      python.version: '3.7'
+      python.version: "3.7"
     Python38:
-      python.version: '3.8'
+      python.version: "3.8"
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: "$(python.version)"
+    displayName: "Use Python $(python.version)"
 
-- script: |
-    sudo apt-get update && sudo apt-get install python3-venv
-  condition: startswith(variables['python.version'], '3')
-  displayName: 'install deps'
+  - script: |
+      sudo apt-get update && sudo apt-get install python3-venv
+    condition: startswith(variables['python.version'], '3')
+    displayName: "install deps"
 
-- script: |
-    make lint
-  displayName: 'lint'
+  - script: |
+      make lint
+    displayName: "lint"
 
+  - script: |
+      make test
+    displayName: "test"
 
-- script: |
-    make test
-  displayName: 'test'
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: "Cobertura"
+      summaryFileLocation: "$(System.DefaultWorkingDirectory)/**/.coverage.xml"
 
-- task: PublishCodeCoverageResults@1
-  inputs:
-    codeCoverageTool: 'Cobertura'
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/.coverage.xml'
-
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: '$(System.DefaultWorkingDirectory)/**/.pytest.xml'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: "$(System.DefaultWorkingDirectory)/**/.pytest.xml"
