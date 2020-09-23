@@ -17,11 +17,12 @@ TEST = pytest \
 
 all: fmt lint test
 
-venv: venv/bin/activate
-venv/bin/activate: setup.py
+# venv: venv/bin/activate
+venv: setup.py
 	python3 -m venv venv
 	$(VENV) pip install -e .[dev]
-	touch venv/bin/activate
+	touch venv
+	# touch venv/bin/activate
 
 
 venv-clean:
