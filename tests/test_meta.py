@@ -104,7 +104,11 @@ class TestNoConcretesInInterfaces:
     @pytest.mark.parametrize(
         "meth",
         filter(
-            lambda m: TestNoConcretesInInterfaces.filter_meths(_Result, m),
+            lambda m: TestNoConcretesInInterfaces.filter_meths(
+                # No idea why it thinks `m` is "object", not "str"
+                _Result,
+                m,  # type: ignore
+            ),
             _Result.__dict__,
         ),
     )
@@ -115,8 +119,12 @@ class TestNoConcretesInInterfaces:
     @pytest.mark.parametrize(
         "meth",
         filter(
-            lambda m: TestNoConcretesInInterfaces.filter_meths(_Option, m),
-            _Option.__dict__,
+            lambda m: TestNoConcretesInInterfaces.filter_meths(
+                # No idea why it thinks `m` is "object", not "str"
+                _Option,
+                m,  # type: ignore
+            ),
+            _Option.__dict__.keys(),
         ),
     )
     def test_no_concrete_option_methods(self, meth: str) -> None:

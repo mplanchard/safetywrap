@@ -7,8 +7,8 @@ if t.TYPE_CHECKING:
 
 # pylint: disable=invalid-name
 
-T = t.TypeVar("T")
-E = t.TypeVar("E")
+T = t.TypeVar("T", covariant=True)
+E = t.TypeVar("E", covariant=True)
 U = t.TypeVar("U")
 F = t.TypeVar("F")
 
@@ -51,8 +51,8 @@ class _Result(t.Generic[T, E]):
 
     @staticmethod
     def collect(
-        iterable: t.Iterable["Result[T, E]"],
-    ) -> "Result[t.Tuple[T, ...], E]":
+        iterable: t.Iterable["Result[U, F]"],
+    ) -> "Result[t.Tuple[U, ...], F]":
         """Convert an iterable of Results into a Result of an iterable.
 
         Given some iterable of type Iterable[Result[T, E]], try to collect
@@ -63,12 +63,12 @@ class _Result(t.Generic[T, E]):
         raise NotImplementedError
 
     @staticmethod
-    def err_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
+    def err_if(predicate: t.Callable[[U], bool], value: U) -> "Result[U, U]":
         """Return Err(val) if predicate(val) is True, otherwise Ok(val)."""
         raise NotImplementedError
 
     @staticmethod
-    def ok_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
+    def ok_if(predicate: t.Callable[[U], bool], value: U) -> "Result[U, U]":
         """Return Ok(val) if predicate(val) is True, otherwise Err(val)."""
         raise NotImplementedError
 
@@ -234,12 +234,12 @@ class _Option(t.Generic[T]):
         raise NotImplementedError
 
     @staticmethod
-    def nothing_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
+    def nothing_if(predicate: t.Callable[[U], bool], value: U) -> "Option[U]":
         """Return Nothing() if predicate(val) is True, else Some(val)."""
         raise NotImplementedError
 
     @staticmethod
-    def some_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
+    def some_if(predicate: t.Callable[[U], bool], value: U) -> "Option[U]":
         """Return Some(val) if predicate(val) is True, else Nothing()."""
         raise NotImplementedError
 
@@ -352,7 +352,7 @@ class _Option(t.Generic[T]):
         """Apply `fn` to contained value, or compute a default."""
         raise NotImplementedError
 
-    def ok_or(self, err: E) -> "Result[T, E]":
+    def ok_or(self, err: F) -> "Result[T, F]":
         """Transform an option into a `Result`.
 
         Maps `Some(v)` to `Ok(v)` or `None` to `Err(err)`.

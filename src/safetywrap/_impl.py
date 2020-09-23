@@ -7,8 +7,8 @@ from functools import reduce
 from ._interface import _Option, _Result
 
 
-T = t.TypeVar("T")
-E = t.TypeVar("E")
+T = t.TypeVar("T", covariant=True)
+E = t.TypeVar("E", covariant=True)
 U = t.TypeVar("U")
 F = t.TypeVar("F")
 
@@ -49,8 +49,8 @@ class Result(_Result[T, E]):
 
     @staticmethod
     def collect(
-        iterable: t.Iterable["Result[T, E]"],
-    ) -> "Result[t.Tuple[T, ...], E]":
+        iterable: t.Iterable["Result[U, F]"],
+    ) -> "Result[t.Tuple[U, ...], F]":
         """Collect an iterable of Results into a Result of an iterable.
 
         Given some iterable of type Iterable[Result[T, E]], try to collect
@@ -71,7 +71,7 @@ class Result(_Result[T, E]):
         hinted, either by a variable annotation or a return type.
         """
         # Non-functional code here to enable true short-circuiting.
-        ok_vals: t.Tuple[T, ...] = ()
+        ok_vals: t.Tuple[U, ...] = ()
         for result in iterable:
             if result.is_err():
                 return result.map(lambda _: ())
@@ -79,14 +79,14 @@ class Result(_Result[T, E]):
         return Ok(ok_vals)
 
     @staticmethod
-    def err_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
+    def err_if(predicate: t.Callable[[U], bool], value: U) -> "Result[U, U]":
         """Return Err(val) if predicate(val) is True, otherwise Ok(val)."""
         if predicate(value):
             return Err(value)
         return Ok(value)
 
     @staticmethod
-    def ok_if(predicate: t.Callable[[T], bool], value: T) -> "Result[T, T]":
+    def ok_if(predicate: t.Callable[[U], bool], value: U) -> "Result[U, U]":
         """Return Ok(val) if predicate(val) is True, otherwise Err(val)."""
         if predicate(value):
             return Ok(value)
@@ -110,14 +110,14 @@ class Option(_Option[T]):
         return Some(value)
 
     @staticmethod
-    def nothing_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
+    def nothing_if(predicate: t.Callable[[U], bool], value: U) -> "Option[U]":
         """Return Nothing() if predicate(val) is True, else Some(val)."""
         if predicate(value):
             return Nothing()
         return Some(value)
 
     @staticmethod
-    def some_if(predicate: t.Callable[[T], bool], value: T) -> "Option[T]":
+    def some_if(predicate: t.Callable[[U], bool], value: U) -> "Option[U]":
         """Return Some(val) if predicate(val) is True, else Nothing()."""
         if predicate(value):
             return Some(value)
@@ -558,12 +558,12 @@ class Some(Option[T]):
         """Apply `fn` to contained value, or compute a default."""
         return fn(self._value)
 
-    def ok_or(self, err: E) -> Result[T, E]:
+    def ok_or(self, err: F) -> Result[T, F]:
         """Transform an option into a `Result`.
 
         Maps `Some(v)` to `Ok(v)` or `None` to `Err(err)`.
         """
-        res: Result[T, E] = Ok(self._value)
+        res: Result[T, F] = Ok(self._value)
         return res
 
     def ok_or_else(self, err_fn: t.Callable[[], E]) -> Result[T, E]:
@@ -741,12 +741,12 @@ class Nothing(Option[T]):
         """Apply `fn` to contained value, or compute a default."""
         return default()
 
-    def ok_or(self, err: E) -> Result[T, E]:
+    def ok_or(self, err: F) -> Result[T, F]:
         """Transform an option into a `Result`.
 
         Maps `Some(v)` to `Ok(v)` or `None` to `Err(err)`.
         """
-        res: Result[T, E] = Err(err)
+        res: Result[T, F] = Err(err)
         return res
 
     def ok_or_else(self, err_fn: t.Callable[[], E]) -> Result[T, E]:
@@ -790,7 +790,7 @@ class Nothing(Option[T]):
 
     def __str__(self) -> str:
         """Return a string representation of Nothing()."""
-        return f"Nothing()"
+        return "Nothing()"
 
     def __repr__(self) -> str:
         """Return a string representation of Nothing()."""

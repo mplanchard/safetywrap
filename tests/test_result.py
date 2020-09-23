@@ -156,6 +156,22 @@ class TestResult:
         """Test that and_then chains result-generating functions."""
         assert start.and_then(first).and_then(second) == exp
 
+    def test_and_then_covariance(self) -> None:
+        """Covariant errors are acceptable for flatmapping."""
+
+        class MyInt(int):
+            """A subclass of int."""
+
+        def process_int(i: int) -> Result[MyInt, RuntimeError]:
+            return Err(RuntimeError(f"it broke {i}"))
+
+        start: Result[int, Exception] = Ok(5)
+        # We can flatmap w/a function that takes any covariant type of
+        # int or Exception. The result remains the original exception type,
+        # since we cannot guarantee narrowing to the covariant type.
+        flatmapped: Result[int, Exception] = start.and_then(process_int)
+        assert flatmapped
+
     def test_flatmap(self) -> None:
         """Flatmap is an alias for and_then"""
         ok: Result[int, int] = Ok(2)
@@ -192,7 +208,7 @@ class TestResult:
     @pytest.mark.parametrize("exc_cls", (None, IOError))
     def test_expect_raising(self, exc_cls: t.Type[Exception]) -> None:
         """Test expecting a value to be Ok()."""
-        exp_exc = exc_cls if exc_cls else RuntimeError
+        exp_exc: t.Type[Exception] = exc_cls if exc_cls else RuntimeError
         kwargs = {"exc_cls": exc_cls} if exc_cls else {}
         input_val = 2
         msg = "not what I expected"
@@ -206,7 +222,7 @@ class TestResult:
     @pytest.mark.parametrize("exc_cls", (None, IOError))
     def test_raise_if_err_raising(self, exc_cls: t.Type[Exception]) -> None:
         """Test raise_if_err for Err() values."""
-        exp_exc = exc_cls if exc_cls else RuntimeError
+        exp_exc: t.Type[Exception] = exc_cls if exc_cls else RuntimeError
         kwargs = {"exc_cls": exc_cls} if exc_cls else {}
         input_val = 2
         msg = "not what I expected"
@@ -228,7 +244,7 @@ class TestResult:
     @pytest.mark.parametrize("exc_cls", (None, IOError))
     def test_expect_err_raising(self, exc_cls: t.Type[Exception]) -> None:
         """Test expecting a value to be Ok()."""
-        exp_exc = exc_cls if exc_cls else RuntimeError
+        exp_exc: t.Type[Exception] = exc_cls if exc_cls else RuntimeError
         kwargs = {"exc_cls": exc_cls} if exc_cls else {}
         msg = "not what I expected"
 
@@ -264,6 +280,21 @@ class TestResult:
     def test_map(self, start: Result[int, str], exp: Result[int, str]) -> None:
         """.map() will map onto Ok() and ignore Err()."""
         assert start.map(lambda x: int(x ** 2)) == exp
+
+    def test_map_covariance(self) -> None:
+        """The input type to the map fn is covariant."""
+
+        class MyStr(str):
+            """Subclass of str."""
+
+        def to_mystr(string: str) -> MyStr:
+            return MyStr(string) if not isinstance(string, MyStr) else string
+
+        start: Result[str, str] = Ok("foo")
+        # We can assign the result to [str, str] even though we know it's
+        # actually a MyStr, since MyStr is covariant with str
+        end: Result[str, str] = start.map(to_mystr)
+        assert end == Ok(MyStr("foo"))
 
     @pytest.mark.parametrize(
         "start, exp", ((Ok("foo"), Ok("foo")), (Err(2), Err("2")))

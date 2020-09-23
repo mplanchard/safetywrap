@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2020-09-23
+
+### Added
+
+- Type inference now allows covariance for `Result` and `Option` wrapped types
+  - Allows a function of type `Callable[[int], RuntimeError]` to be applied
+    via flatmap (`.and_then()`) to a result of type `Result[int, Exception]`
+  - Allows e.g. any of the following to be assigned to a type of
+    `Result[Number, Exception]`:
+    - `Result[int, RuntimeError]`
+    - `Result[float, TypeError]`
+    - etc.
+  - This makes `.and_then()`/`.flatmap()`, `.map()`, `.map_err()`, and so on
+    much more convenient to use in result chains.
+
 ## [1.4.0] - 2020-03-09
 
 ### Added
@@ -84,8 +99,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apache license
 
 [Unreleased]: https://github.com/mplanchard/safetywrap/compare/v1.4.0...HEAD
+<<<<<<< HEAD
 [1.4.0]: https://github.com/mplanchard/safetywrap/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/mplanchard/safetywrap/compare/v1.3.0...v1.3.1
+=======
+[1.4.0]: https://github.com/mplanchard/safetywrap/compare/v1.3.0...v1.4.0
+>>>>>>> be5a2ed... Covariance
 [1.3.0]: https://github.com/mplanchard/safetywrap/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mplanchard/safetywrap/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mplanchard/safetywrap/compare/v1.0.2...v1.1.0

@@ -170,7 +170,7 @@ class TestOption:
         self, method: str, exc_cls: t.Type[Exception]
     ) -> None:
         """Can specify exception msg/cls if value is not Some()."""
-        exp_exc = exc_cls if exc_cls else RuntimeError
+        exp_exc: t.Type[Exception] = exc_cls if exc_cls else RuntimeError
         kwargs = {"exc_cls": exc_cls} if exc_cls else {}
         msg = "not what I expected"
 
