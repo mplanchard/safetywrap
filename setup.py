@@ -122,7 +122,7 @@ PACKAGE_DIR = realpath(dirname(__file__))
 REQ_FILE = join(PACKAGE_DIR, "requirements_unfrozen.txt")
 if exists(REQ_FILE):
     with open(join(PACKAGE_DIR, "requirements.txt")) as reqfile:
-        for ln in (line.strip() for line in reqfile):
+        for ln in (l.strip() for l in reqfile):  # noqa
             if ln and not ln.startswith("#"):
                 PACKAGE_DEPENDENCIES += (ln,)
 
@@ -134,6 +134,9 @@ with open(join(cwd, "src/{}/__init__.py".format(NAME))) as init_file:
         # This will set __version__ and __version_info__ variables locally
         if line.startswith("__version"):
             exec(line)
+            break
+    else:
+        raise RuntimeError("Could not parse version!")
 
 setup(
     author_email=EMAIL,
@@ -153,5 +156,5 @@ setup(
     setup_requires=SETUP_DEPENDENCIES,
     tests_require=TEST_DEPENDENCIES,
     url=URL,
-    version="0.0.0",
+    version=__version__,
 )
